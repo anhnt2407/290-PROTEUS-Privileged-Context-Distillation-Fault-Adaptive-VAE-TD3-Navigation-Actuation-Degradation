@@ -1,0 +1,256 @@
+[train] 11 jobs on 12 workers
+[raw_dr_s1] ep   25 step   2630 sr25 0.00 s_max 0.25 ret  -38.76
+[dr_s1] ep   25 step   2919 sr25 0.00 s_max 0.25 ret  -36.83
+[abl_ddpg_s1] ep   25 step   2934 sr25 0.00 s_max 0.25 ret  -38.93
+[teacher_s1] ep   25 step   2882 sr25 0.04 s_max 0.25 ret  -36.42
+[teacher_s3] ep   25 step   3004 sr25 0.00 s_max 0.25 ret  -38.11
+[raw_dr_s3] ep   25 step   4042 sr25 0.00 s_max 0.25 ret  -34.86
+[dr_s2] ep   25 step   4593 sr25 0.08 s_max 0.25 ret  -28.42
+[dr_s3] ep   25 step   4161 sr25 0.00 s_max 0.25 ret  -37.95
+[raw_dr_s2] ep   25 step   5141 sr25 0.08 s_max 0.25 ret  -23.53
+[teacher_s2] ep   25 step   4536 sr25 0.08 s_max 0.25 ret  -27.05
+[abl_unif_s1] ep   25 step   4511 sr25 0.00 s_max 1.00 ret  -32.50
+[raw_dr_s1] ep   50 step   7350 sr25 0.24 s_max 0.25 ret  -21.59
+[raw_dr_s3] ep   50 step   7443 sr25 0.08 s_max 0.25 ret  -29.74
+[dr_s1] ep   50 step   6737 sr25 0.08 s_max 0.25 ret  -34.88
+[raw_dr_s1] ep   75 step  10490 sr25 0.32 s_max 0.25 ret  -16.20
+[teacher_s1] ep   50 step   5695 sr25 0.00 s_max 0.25 ret  -34.13
+[raw_dr_s2] ep   50 step   8694 sr25 0.28 s_max 0.25 ret  -12.13
+[dr_s2] ep   50 step   9767 sr25 0.04 s_max 0.25 ret  -24.39
+[dr_s3] ep   50 step   7622 sr25 0.00 s_max 0.25 ret  -37.84
+[teacher_s3] ep   50 step   6821 sr25 0.00 s_max 0.25 ret  -36.38
+[abl_ddpg_s1] ep   50 step   6930 sr25 0.00 s_max 0.25 ret  -35.13
+[raw_dr_s1] ep  100 step  12914 sr25 0.44 s_max 0.25 ret   -7.85
+[raw_dr_s3] ep   75 step  10780 sr25 0.28 s_max 0.25 ret  -16.95
+[raw_dr_s2] ep   75 step  11188 sr25 0.16 s_max 0.25 ret  -20.99
+[dr_s1] ep   75 step  10326 sr25 0.08 s_max 0.25 ret  -27.94
+[raw_dr_s1] ep  125 step  15257 sr25 0.36 s_max 0.25 ret  -14.63
+[raw_dr_s3] ep  100 step  12907 sr25 0.20 s_max 0.25 ret  -20.58
+[abl_unif_s1] ep   50 step   9577 sr25 0.00 s_max 1.00 ret  -31.97
+[teacher_s2] ep   50 step   9850 sr25 0.08 s_max 0.25 ret  -23.97
+[teacher_s1] ep   75 step   8759 sr25 0.04 s_max 0.25 ret  -42.10
+[raw_dr_s1] ep  150 step  17710 sr25 0.52 s_max 0.25 ret   -5.65
+[dr_s2] ep   75 step  15216 sr25 0.12 s_max 0.25 ret  -18.51
+[dr_s3] ep   75 step  11527 sr25 0.00 s_max 0.25 ret  -30.68
+[teacher_s3] ep   75 step   9943 sr25 0.00 s_max 0.25 ret  -39.25
+[raw_dr_s2] ep  100 step  14335 sr25 0.32 s_max 0.25 ret  -14.39
+[raw_dr_s3] ep  125 step  15595 sr25 0.52 s_max 0.25 ret   -3.44
+[abl_ddpg_s1] ep   75 step  11217 sr25 0.12 s_max 0.25 ret  -28.08
+[raw_dr_s1] ep  175 step  20789 sr25 0.76 s_max 0.25 ret   13.02
+[dr_s1] ep  100 step  14715 sr25 0.08 s_max 0.25 ret  -28.03
+[raw_dr_s2] ep  125 step  18236 sr25 0.44 s_max 0.25 ret   -5.20
+[teacher_s1] ep  100 step  12614 sr25 0.04 s_max 0.25 ret  -45.81
+[raw_dr_s3] ep  150 step  19323 sr25 0.64 s_max 0.25 ret    1.35
+[raw_dr_s1] ep  200 step  24007 sr25 0.72 s_max 0.35 ret    7.57
+[dr_s2] ep  100 step  20569 sr25 0.28 s_max 0.25 ret  -16.29
+[abl_unif_s1] ep   75 step  14455 sr25 0.12 s_max 1.00 ret  -27.70
+[abl_ddpg_s1] ep  100 step  13797 sr25 0.08 s_max 0.25 ret  -26.76
+[raw_dr_s2] ep  150 step  22023 sr25 0.56 s_max 0.25 ret    2.63
+[dr_s3] ep  100 step  16555 sr25 0.12 s_max 0.25 ret  -25.68
+[teacher_s3] ep  100 step  14484 sr25 0.08 s_max 0.25 ret  -27.61
+[teacher_s2] ep   75 step  15685 sr25 0.08 s_max 0.25 ret  -20.74
+[raw_dr_s1] ep  225 step  27173 sr25 0.76 s_max 0.40 ret    8.55
+[dr_s1] ep  125 step  18732 sr25 0.28 s_max 0.25 ret  -16.11
+[raw_dr_s3] ep  175 step  22865 sr25 0.60 s_max 0.30 ret    2.57
+[teacher_s1] ep  125 step  17116 sr25 0.00 s_max 0.25 ret  -43.14
+[raw_dr_s2] ep  175 step  25408 sr25 0.48 s_max 0.25 ret   -2.81
+[raw_dr_s1] ep  250 step  30072 sr25 0.84 s_max 0.45 ret   16.30
+[abl_ddpg_s1] ep  125 step  16924 sr25 0.04 s_max 0.25 ret  -31.28
+[raw_dr_s3] ep  200 step  25781 sr25 0.68 s_max 0.40 ret    5.65
+[dr_s3] ep  125 step  20489 sr25 0.20 s_max 0.25 ret  -21.91
+[dr_s2] ep  125 step  26399 sr25 0.32 s_max 0.25 ret  -13.11
+[abl_unif_s1] ep  100 step  20444 sr25 0.04 s_max 1.00 ret  -26.87
+[teacher_s3] ep  125 step  19048 sr25 0.16 s_max 0.25 ret  -23.10
+[raw_dr_s2] ep  200 step  28526 sr25 0.68 s_max 0.30 ret    7.61
+[dr_s1] ep  150 step  23225 sr25 0.24 s_max 0.25 ret  -22.78
+[raw_dr_s1] ep  275 step  32831 sr25 0.68 s_max 0.50 ret    4.91
+[teacher_s2] ep  100 step  20711 sr25 0.08 s_max 0.25 ret  -27.81
+[raw_dr_s3] ep  225 step  29227 sr25 0.56 s_max 0.40 ret   -2.42
+[raw_dr_s2] ep  225 step  31002 sr25 0.84 s_max 0.35 ret   17.23
+[dr_s3] ep  150 step  24213 sr25 0.40 s_max 0.25 ret  -10.67
+[abl_ddpg_s1] ep  150 step  19818 sr25 0.16 s_max 0.25 ret  -24.42
+[raw_dr_s1] ep  300 step  35354 sr25 0.72 s_max 0.60 ret    8.05
+[teacher_s1] ep  150 step  22104 sr25 0.08 s_max 0.25 ret  -35.97
+[teacher_s3] ep  150 step  24048 sr25 0.52 s_max 0.25 ret   -1.98
+[raw_dr_s3] ep  250 step  32236 sr25 0.60 s_max 0.40 ret    0.61
+[raw_dr_s2] ep  250 step  33715 sr25 0.96 s_max 0.40 ret   24.27
+[dr_s1] ep  175 step  27247 sr25 0.52 s_max 0.25 ret   -4.50
+[dr_s2] ep  150 step  31843 sr25 0.64 s_max 0.25 ret    8.98
+[raw_dr_s1] ep  325 step  38172 sr25 0.72 s_max 0.65 ret    8.25
+[abl_ddpg_s1] ep  175 step  22603 sr25 0.12 s_max 0.25 ret  -30.36
+[abl_unif_s1] ep  125 step  26054 sr25 0.32 s_max 1.00 ret   -4.86
+[raw_dr_s2] ep  275 step  36372 sr25 0.48 s_max 0.45 ret   -2.05
+[raw_dr_s1] ep  350 step  41012 sr25 0.84 s_max 0.70 ret   13.75
+[raw_dr_s3] ep  275 step  36071 sr25 0.80 s_max 0.45 ret   11.02
+[dr_s3] ep  175 step  29199 sr25 0.32 s_max 0.25 ret  -16.23
+[teacher_s2] ep  125 step  25820 sr25 0.20 s_max 0.25 ret  -17.16
+[teacher_s1] ep  175 step  26277 sr25 0.08 s_max 0.25 ret  -31.94
+[teacher_s3] ep  175 step  28539 sr25 0.44 s_max 0.25 ret   -1.78
+[raw_dr_s2] ep  300 step  38995 sr25 0.80 s_max 0.50 ret   14.94
+[dr_s1] ep  200 step  31562 sr25 0.40 s_max 0.25 ret   -8.00
+[raw_dr_s1] ep  375 step  44002 sr25 0.80 s_max 0.75 ret   16.61
+[abl_ddpg_s1] ep  200 step  25137 sr25 0.04 s_max 0.25 ret  -31.53
+[raw_dr_s3] ep  300 step  38945 sr25 0.72 s_max 0.55 ret    7.09
+[raw_dr_s1] ep  400 step  46469 sr25 0.88 s_max 0.85 ret   16.33
+[dr_s2] ep  175 step  38397 sr25 0.32 s_max 0.25 ret   -7.96
+[raw_dr_s3] ep  325 step  42208 sr25 0.76 s_max 0.60 ret    7.15
+[raw_dr_s2] ep  325 step  42612 sr25 0.68 s_max 0.55 ret    9.31
+[dr_s3] ep  200 step  33867 sr25 0.60 s_max 0.25 ret   -1.55
+[abl_ddpg_s1] ep  225 step  27935 sr25 0.24 s_max 0.25 ret  -18.71
+[raw_dr_s1] ep  425 step  50072 sr25 0.68 s_max 0.90 ret   10.90
+[teacher_s3] ep  200 step  32721 sr25 0.80 s_max 0.30 ret   18.84
+[teacher_s1] ep  200 step  31078 sr25 0.28 s_max 0.25 ret  -19.27
+[abl_unif_s1] ep  150 step  32439 sr25 0.32 s_max 1.00 ret   -0.61
+[dr_s1] ep  225 step  36411 sr25 0.64 s_max 0.25 ret    6.42
+[raw_dr_s2] ep  350 step  44857 sr25 0.72 s_max 0.60 ret   10.10
+[teacher_s2] ep  150 step  31832 sr25 0.20 s_max 0.25 ret  -10.53
+[raw_dr_s3] ep  350 step  45865 sr25 0.80 s_max 0.65 ret   14.91
+[raw_dr_s2] ep  375 step  47986 sr25 0.60 s_max 0.65 ret    3.08
+[raw_dr_s1] ep  450 step  53599 sr25 0.60 s_max 0.95 ret    4.00
+[dr_s2] ep  200 step  43939 sr25 0.64 s_max 0.25 ret    5.32
+[raw_dr_s3] ep  375 step  49286 sr25 0.72 s_max 0.70 ret    8.87
+[dr_s3] ep  225 step  39158 sr25 0.68 s_max 0.25 ret   11.79
+[abl_ddpg_s1] ep  250 step  31641 sr25 0.16 s_max 0.25 ret  -21.84
+[teacher_s3] ep  225 step  37290 sr25 0.56 s_max 0.30 ret    2.01
+[dr_s1] ep  250 step  40468 sr25 0.68 s_max 0.25 ret    5.56
+[raw_dr_s2] ep  400 step  50902 sr25 0.68 s_max 0.75 ret    7.66
+[raw_dr_s1] ep  475 step  56612 sr25 0.68 s_max 1.00 ret    5.93
+[teacher_s1] ep  225 step  36525 sr25 0.24 s_max 0.25 ret  -14.82
+[raw_dr_s2] ep  425 step  53746 sr25 0.68 s_max 0.80 ret    8.31
+[raw_dr_s3] ep  400 step  52390 sr25 0.56 s_max 0.80 ret    0.72
+[abl_unif_s1] ep  175 step  38140 sr25 0.36 s_max 1.00 ret   -1.67
+[teacher_s2] ep  175 step  36869 sr25 0.40 s_max 0.25 ret   -3.72
+[dr_s3] ep  250 step  44404 sr25 0.64 s_max 0.30 ret    9.70
+[abl_ddpg_s1] ep  275 step  34857 sr25 0.00 s_max 0.25 ret  -37.51
+[dr_s2] ep  225 step  48517 sr25 0.68 s_max 0.30 ret    7.58
+[teacher_s3] ep  250 step  41284 sr25 0.84 s_max 0.35 ret   17.73
+[raw_dr_s1] ep  500 step  60728 sr25 0.48 s_max 1.00 ret   -0.81
+[raw_dr_s2] ep  450 step  56791 sr25 0.80 s_max 0.85 ret   11.63
+[dr_s1] ep  275 step  45097 sr25 0.68 s_max 0.30 ret    8.38
+[raw_dr_s3] ep  425 step  56581 sr25 0.76 s_max 0.85 ret   16.07
+[dr_s2] ep  250 step  53640 sr25 0.64 s_max 0.35 ret   10.84
+[teacher_s1] ep  250 step  42345 sr25 0.36 s_max 0.25 ret   -1.18
+[dr_s3] ep  275 step  48841 sr25 0.72 s_max 0.35 ret   12.34
+[raw_dr_s1] ep  525 step  64247 sr25 0.60 s_max 1.00 ret    2.14
+[abl_ddpg_s1] ep  300 step  38335 sr25 0.00 s_max 0.25 ret  -39.58
+[raw_dr_s2] ep  475 step  60425 sr25 0.72 s_max 0.90 ret   14.53
+[abl_unif_s1] ep  200 step  43559 sr25 0.44 s_max 1.00 ret   -2.37
+[teacher_s2] ep  200 step  41733 sr25 0.48 s_max 0.25 ret   -3.88
+[raw_dr_s3] ep  450 step  60591 sr25 0.64 s_max 0.90 ret    5.91
+[dr_s1] ep  300 step  49583 sr25 0.84 s_max 0.40 ret   18.48
+[raw_dr_s1] ep  550 step  67850 sr25 0.84 s_max 1.00 ret   11.80
+[raw_dr_s2] ep  500 step  63554 sr25 0.68 s_max 1.00 ret    9.64
+[teacher_s3] ep  275 step  45859 sr25 0.80 s_max 0.40 ret   13.34
+[abl_ddpg_s1] ep  325 step  41326 sr25 0.00 s_max 0.25 ret  -43.79
+[dr_s2] ep  275 step  58941 sr25 0.44 s_max 0.35 ret    1.86
+[dr_s3] ep  300 step  52705 sr25 0.80 s_max 0.45 ret   14.71
+[raw_dr_s1] ep  575 step  71371 sr25 0.28 s_max 1.00 ret  -11.76
+[raw_dr_s3] ep  475 step  64614 sr25 0.76 s_max 0.95 ret   12.22
+[dr_s1] ep  325 step  53852 sr25 0.80 s_max 0.45 ret   15.66
+[raw_dr_s2] ep  525 step  67733 sr25 0.76 s_max 1.00 ret   12.79
+[teacher_s1] ep  275 step  47579 sr25 0.64 s_max 0.25 ret    3.98
+[abl_unif_s1] ep  225 step  49307 sr25 0.52 s_max 1.00 ret   -0.01
+[raw_dr_s1] ep  600 step  74350 sr25 0.68 s_max 1.00 ret    4.02
+[teacher_s2] ep  225 step  46782 sr25 0.48 s_max 0.25 ret   -4.57
+[teacher_s3] ep  300 step  49968 sr25 0.84 s_max 0.50 ret   17.63
+[dr_s3] ep  325 step  56926 sr25 0.76 s_max 0.50 ret   18.41
+[dr_s2] ep  300 step  63920 sr25 0.72 s_max 0.45 ret    9.53
+[raw_dr_s3] ep  500 step  68751 sr25 0.72 s_max 1.00 ret   11.96
+[raw_dr_s2] ep  550 step  70856 sr25 0.64 s_max 1.00 ret    6.62
+[raw_dr_s1] ep  625 step  77660 sr25 0.56 s_max 1.00 ret    2.20
+[dr_s1] ep  350 step  57896 sr25 0.76 s_max 0.50 ret   12.25
+[abl_ddpg_s1] ep  350 step  46305 sr25 0.00 s_max 0.25 ret  -34.91
+[raw_dr_s3] ep  525 step  72222 sr25 0.64 s_max 1.00 ret    4.17
+[teacher_s1] ep  300 step  51703 sr25 0.64 s_max 0.35 ret    9.58
+[raw_dr_s2] ep  575 step  74526 sr25 0.60 s_max 1.00 ret    6.06
+[dr_s3] ep  350 step  60744 sr25 0.80 s_max 0.55 ret   17.62
+[teacher_s2] ep  250 step  51596 sr25 0.44 s_max 0.25 ret   -5.63
+[teacher_s3] ep  325 step  53946 sr25 0.76 s_max 0.55 ret   14.86
+[raw_dr_s1] ep  650 step  81700 sr25 0.80 s_max 1.00 ret   16.71
+[dr_s1] ep  375 step  62062 sr25 0.76 s_max 0.55 ret   11.93
+[dr_s2] ep  325 step  68549 sr25 0.56 s_max 0.45 ret    0.58
+[abl_unif_s1] ep  250 step  55107 sr25 0.36 s_max 1.00 ret   -1.85
+[raw_dr_s2] ep  600 step  78223 sr25 0.72 s_max 1.00 ret    7.92
+[raw_dr_s3] ep  550 step  76386 sr25 0.68 s_max 1.00 ret    9.68
+[abl_ddpg_s1] ep  375 step  49988 sr25 0.12 s_max 0.25 ret  -29.92
+[dr_s1] ep  400 step  65491 sr25 0.68 s_max 0.65 ret    7.72
+[raw_dr_s1] ep  675 step  85049 sr25 0.72 s_max 1.00 ret   12.02
+[dr_s3] ep  375 step  64747 sr25 0.76 s_max 0.60 ret   11.90
+[teacher_s3] ep  350 step  57503 sr25 0.84 s_max 0.60 ret   17.73
+[dr_s2] ep  350 step  72875 sr25 0.80 s_max 0.50 ret   11.89
+[raw_dr_s2] ep  625 step  81978 sr25 0.72 s_max 1.00 ret    7.58
+[teacher_s1] ep  325 step  56222 sr25 0.56 s_max 0.40 ret    5.89
+[dr_s1] ep  425 step  68919 sr25 0.72 s_max 0.70 ret    8.65
+[raw_dr_s1] ep  700 step  89114 sr25 0.64 s_max 1.00 ret    8.86
+[raw_dr_s3] ep  575 step  80351 sr25 0.72 s_max 1.00 ret    9.04
+[raw_dr_s1] done in 908.2s final sr100=0.67
+[train] done ('raw_dr', 1)
+[raw_dr_s2] ep  650 step  85830 sr25 0.64 s_max 1.00 ret    8.21
+[abl_unif_s1] ep  275 step  61401 sr25 0.28 s_max 1.00 ret   -5.38
+[teacher_s2] ep  275 step  57921 sr25 0.36 s_max 0.25 ret   -5.54
+[dr_s3] ep  400 step  69044 sr25 0.72 s_max 0.70 ret    8.53
+[teacher_s3] ep  375 step  61667 sr25 0.76 s_max 0.65 ret   13.86
+[dr_s2] ep  375 step  76802 sr25 0.72 s_max 0.55 ret   10.13
+[abl_ddpg_s1] ep  400 step  54710 sr25 0.00 s_max 0.25 ret  -40.11
+[teacher_s1] ep  350 step  59998 sr25 0.72 s_max 0.40 ret    9.94
+[raw_dr_s3] ep  600 step  84148 sr25 0.72 s_max 1.00 ret   10.81
+[dr_s1] ep  450 step  73549 sr25 0.68 s_max 0.75 ret    9.54
+[raw_dr_s2] ep  675 step  89110 sr25 0.80 s_max 1.00 ret   13.25
+[raw_dr_s2] done in 960.9s final sr100=0.73
+[train] done ('raw_dr', 2)
+[dr_s3] ep  425 step  72477 sr25 0.80 s_max 0.75 ret   15.12
+[raw_dr_s3] ep  625 step  87632 sr25 0.72 s_max 1.00 ret   11.17
+[teacher_s3] ep  400 step  65627 sr25 0.64 s_max 0.75 ret    2.88
+[dr_s2] ep  400 step  81368 sr25 0.56 s_max 0.65 ret    5.84
+[dr_s1] ep  475 step  77881 sr25 0.68 s_max 0.80 ret    7.31
+[teacher_s2] ep  300 step  63871 sr25 0.36 s_max 0.25 ret   -4.51
+[raw_dr_s3] done in 1008.7s final sr100=0.70
+[train] done ('raw_dr', 3)
+[dr_s3] ep  450 step  76781 sr25 0.76 s_max 0.80 ret   13.71
+[teacher_s1] ep  375 step  64965 sr25 0.52 s_max 0.45 ret    5.87
+[abl_ddpg_s1] ep  425 step  59787 sr25 0.04 s_max 0.25 ret  -38.73
+[abl_unif_s1] ep  300 step  68063 sr25 0.16 s_max 1.00 ret   -8.95
+[teacher_s3] ep  425 step  69217 sr25 0.80 s_max 0.80 ret   18.08
+[dr_s2] ep  425 step  85624 sr25 0.64 s_max 0.70 ret    2.26
+[dr_s1] ep  500 step  82393 sr25 0.52 s_max 0.85 ret   -2.22
+[dr_s3] ep  475 step  80646 sr25 0.68 s_max 0.85 ret   10.97
+[abl_ddpg_s1] ep  450 step  63881 sr25 0.04 s_max 0.25 ret  -35.03
+[dr_s2] ep  450 step  89673 sr25 0.64 s_max 0.75 ret    4.00
+[teacher_s3] ep  450 step  73265 sr25 0.76 s_max 0.85 ret   11.21
+[dr_s2] done in 1091.6s final sr100=0.62
+[train] done ('dr', 2)
+[teacher_s1] ep  400 step  70549 sr25 0.56 s_max 0.45 ret   10.11
+[teacher_s2] ep  325 step  70848 sr25 0.12 s_max 0.25 ret  -15.88
+[dr_s1] ep  525 step  86752 sr25 0.76 s_max 0.90 ret   14.33
+[abl_unif_s1] ep  325 step  74161 sr25 0.20 s_max 1.00 ret   -9.21
+[dr_s3] ep  500 step  84864 sr25 0.76 s_max 0.95 ret   14.83
+[dr_s1] done in 1143.0s final sr100=0.68
+[train] done ('dr', 1)
+[teacher_s3] ep  475 step  77801 sr25 0.56 s_max 0.90 ret    4.54
+[dr_s3] ep  525 step  88828 sr25 0.64 s_max 1.00 ret    6.63
+[abl_ddpg_s1] ep  475 step  69998 sr25 0.04 s_max 0.25 ret  -41.66
+[abl_unif_s1] ep  350 step  78534 sr25 0.52 s_max 1.00 ret    0.90
+[dr_s3] done in 1169.6s final sr100=0.69
+[train] done ('dr', 3)
+[teacher_s1] ep  425 step  77201 sr25 0.16 s_max 0.42 ret   -1.71
+[teacher_s2] ep  350 step  77334 sr25 0.00 s_max 0.25 ret  -21.18
+[teacher_s3] ep  500 step  82483 sr25 0.64 s_max 0.95 ret   10.38
+[abl_ddpg_s1] ep  500 step  76303 sr25 0.00 s_max 0.25 ret  -24.53
+[abl_unif_s1] ep  375 step  85166 sr25 0.16 s_max 1.00 ret  -16.88
+[teacher_s2] ep  375 step  82640 sr25 0.04 s_max 0.25 ret  -29.61
+[teacher_s3] ep  525 step  86762 sr25 0.60 s_max 0.95 ret    0.51
+[teacher_s1] ep  450 step  83989 sr25 0.04 s_max 0.40 ret  -20.74
+[teacher_s3] done in 1313.1s final sr100=0.59
+[train] done ('teacher', 3)
+[abl_unif_s1] done in 1322.6s final sr100=0.29
+[train] done ('abl_unif', 1)
+[abl_ddpg_s1] ep  525 step  81582 sr25 0.16 s_max 0.25 ret  -19.66
+[teacher_s2] ep  400 step  88841 sr25 0.00 s_max 0.25 ret  -41.75
+[teacher_s2] done in 1350.3s final sr100=0.01
+[train] done ('teacher', 2)
+[teacher_s1] done in 1357.4s final sr100=0.21
+[train] done ('teacher', 1)
+[abl_ddpg_s1] ep  550 step  87225 sr25 0.00 s_max 0.25 ret  -31.25
+[abl_ddpg_s1] done in 1424.3s final sr100=0.05
+[train] done ('abl_ddpg', 1)
+[distill] 7 jobs on 12 workers

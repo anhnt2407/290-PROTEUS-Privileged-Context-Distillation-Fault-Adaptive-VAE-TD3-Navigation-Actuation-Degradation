@@ -3,16 +3,27 @@
 Covers the entire non-student ladder: RAW-DR, NOM, DR, PROTEUS-T (privileged
 context) and the A1/A5 ablations, differing only through their MethodSpec.
 Fault episodes are drawn by the FaultSampler in the spec's regime, with the
-self-paced severity curriculum where enabled."""
+self-paced severity curriculum where enabled.
+
+Checkpoint selection (identical for every method): a snapshot is taken every
+SNAP_EVERY steps; at the end, among snapshots whose curriculum ceiling is
+within 90% of the run's maximum ceiling (so early easy-curriculum
+checkpoints cannot win), the one with the highest trailing-success rate is
+kept. This converts occasional late-stage deterministic-policy collapse from
+fatal into harmless, and is reported transparently in the run summary."""
 from __future__ import annotations
 
 import argparse
+import io
 import json
 import os
 import time
 
 import numpy as np
 import torch
+
+SNAP_EVERY = 4000
+SNAP_WINDOW = 80          # trailing episodes for the selection metric
 
 from .config import DEFAULT, METHODS, RUNS_DIR, Config, run_name
 from .env.faultnav import COLLISION, SUCCESS, TIMEOUT, FaultNavEnv
@@ -44,9 +55,20 @@ def train(method: str, seed: int, cfg: Config = DEFAULT, device: str = "cpu",
 
     episode_log: list[dict] = []
     losses: list[dict] = []
+    snapshots: list[dict] = []     # {step, sr, s_max, blob}
     t0 = time.time()
     step = 0
     episode = 0
+    next_snap = SNAP_EVERY
+
+    def take_snapshot():
+        buf = io.BytesIO()
+        torch.save(agent.state_dict(), buf)
+        sr = float(np.mean([e["outcome"] == "success"
+                            for e in episode_log[-SNAP_WINDOW:]])) \
+            if episode_log else 0.0
+        snapshots.append({"step": step, "sr": sr,
+                          "s_max": sampler.s_max, "blob": buf.getvalue()})
     while step < cfg.rl.total_steps:
         fault_spec = sampler.sample(rng)
         obs = env.reset(spec=fault_spec)
@@ -81,6 +103,9 @@ def train(method: str, seed: int, cfg: Config = DEFAULT, device: str = "cpu",
                 if step % 500 == 0:
                     out["step"] = step
                     losses.append(out)
+            if step >= next_snap:
+                take_snapshot()
+                next_snap += SNAP_EVERY
         episode += 1
         success = info["outcome"] == SUCCESS
         sampler.update(success)
@@ -97,6 +122,13 @@ def train(method: str, seed: int, cfg: Config = DEFAULT, device: str = "cpu",
                   f"ret {np.mean([e['ret'] for e in recent]):7.2f}",
                   flush=True)
 
+    take_snapshot()                                  # final state competes too
+    # ceiling-qualified best-checkpoint selection (identical for all methods)
+    max_ceiling = max(s["s_max"] for s in snapshots)
+    qualified = [s for s in snapshots if s["s_max"] >= 0.9 * max_ceiling]
+    best = max(qualified, key=lambda s: (s["sr"], s["step"]))
+    agent.load_state_dict(torch.load(io.BytesIO(best["blob"]),
+                                     map_location=device))
     torch.save(agent.state_dict(), os.path.join(out_dir, "agent.pt"))
     summary = {
         "run": run, "method": method, "seed": seed,
@@ -106,6 +138,11 @@ def train(method: str, seed: int, cfg: Config = DEFAULT, device: str = "cpu",
                        for e, s, m in sampler.history],
         "final_sr100": float(np.mean(
             [e["outcome"] == "success" for e in episode_log[-100:]])),
+        "selected_step": best["step"],
+        "selected_sr": round(best["sr"], 3),
+        "selected_s_max": round(best["s_max"], 3),
+        "snapshot_srs": [(s["step"], round(s["sr"], 3), round(s["s_max"], 2))
+                         for s in snapshots],
     }
     with open(os.path.join(out_dir, "summary.json"), "w") as f:
         json.dump(summary, f)
@@ -114,7 +151,9 @@ def train(method: str, seed: int, cfg: Config = DEFAULT, device: str = "cpu",
     with open(os.path.join(out_dir, "losses.json"), "w") as f:
         json.dump(losses, f)
     print(f"[{run}] done in {summary['wall_time_s']}s "
-          f"final sr100={summary['final_sr100']:.2f}", flush=True)
+          f"final sr100={summary['final_sr100']:.2f} "
+          f"selected step={best['step']} sr={best['sr']:.2f} "
+          f"s_max={best['s_max']:.2f}", flush=True)
     return summary
 
 

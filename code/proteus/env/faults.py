@@ -148,6 +148,13 @@ class FaultSampler:
         self._episode = 0
 
     def _sev(self, rng, lo, hi):
+        # graduated rare-catastrophe rehearsal: once the ceiling has cleared
+        # the mid-range, occasionally sample the deep end regardless of the
+        # ceiling. Ungated rehearsal injects catastrophic episodes while the
+        # policy is still forming and can spiral the critic (observed: a
+        # floor-stuck curriculum + extreme episodes -> late value collapse).
+        if self.s_max >= 0.5 and rng.random() < self.fc.p_extreme:
+            return float(rng.uniform(0.85, 1.0))
         hi = max(lo + 1e-6, hi)
         return float(rng.uniform(lo, hi))
 

@@ -64,12 +64,13 @@ def test_gain_fault_slows_wheel():
 
 
 def test_latency_delays_commands():
-    ch = _channel(spec_from({"latency": 1.0}))     # 4 ticks
+    L = DEFAULT.fault.latency_max_ticks
+    ch = _channel(spec_from({"latency": 1.0}))
     outs = [ch.apply(np.array([float(t + 1), 0.0]), tick=t)[0]
-            for t in range(6)]
-    assert outs[:4] == [0.0] * 4                  # queue warm-up
-    assert outs[4] == pytest.approx(1.0)          # first command emerges
-    assert outs[5] == pytest.approx(2.0)
+            for t in range(L + 2)]
+    assert outs[:L] == [0.0] * L                  # queue warm-up
+    assert outs[L] == pytest.approx(1.0)          # first command emerges
+    assert outs[L + 1] == pytest.approx(2.0)
 
 
 def test_deadzone_zeroes_small_commands():

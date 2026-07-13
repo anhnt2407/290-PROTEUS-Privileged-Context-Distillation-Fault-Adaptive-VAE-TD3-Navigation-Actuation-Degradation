@@ -148,6 +148,9 @@ class TD3Agent:
             q1_t, q2_t = self.critic_t(s2, a2)
             q_t = q1_t if self.is_ddpg else torch.min(q1_t, q2_t)
             y = rew + (1.0 - done) * rl.gamma * q_t
+            # clamp to the plausible return range: bounds late-stage value
+            # divergence without touching in-range learning
+            y = torch.clamp(y, -80.0, 80.0)
         q1, q2 = self.critic(s, act)
         loss_c = F.smooth_l1_loss(q1, y)
         if not self.is_ddpg:

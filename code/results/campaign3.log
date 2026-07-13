@@ -1,3 +1,284 @@
 [train] 5 jobs on 12 workers
 [teacher_s3] ep   25 step   2674 sr25 0.04 s_max 0.25 ret  -38.43
 [teacher_s1] ep   25 step   3535 sr25 0.08 s_max 0.25 ret  -35.84
+[abl_ddpg_s1] ep   25 step   3971 sr25 0.04 s_max 0.25 ret  -34.36
+[teacher_s2] ep   25 step   4237 sr25 0.04 s_max 0.25 ret  -28.88
+[abl_unif_s1] ep   25 step   3972 sr25 0.08 s_max 1.00 ret  -32.77
+[teacher_s3] ep   50 step   5213 sr25 0.00 s_max 0.25 ret  -39.20
+[abl_ddpg_s1] ep   50 step   7416 sr25 0.16 s_max 0.25 ret  -25.99
+[teacher_s3] ep   75 step   8261 sr25 0.04 s_max 0.25 ret  -35.73
+[teacher_s2] ep   50 step   7864 sr25 0.00 s_max 0.25 ret  -33.20
+[teacher_s1] ep   50 step   8628 sr25 0.04 s_max 0.25 ret  -22.05
+[abl_unif_s1] ep   50 step   9235 sr25 0.00 s_max 1.00 ret  -38.52
+[abl_ddpg_s1] ep   75 step  10658 sr25 0.20 s_max 0.25 ret  -23.10
+[teacher_s3] ep  100 step  12256 sr25 0.00 s_max 0.25 ret  -36.65
+[teacher_s2] ep   75 step  13069 sr25 0.00 s_max 0.25 ret  -27.76
+[teacher_s3] ep  125 step  15063 sr25 0.12 s_max 0.25 ret  -28.87
+[abl_ddpg_s1] ep  100 step  14200 sr25 0.28 s_max 0.25 ret  -22.73
+[abl_unif_s1] ep   75 step  14876 sr25 0.00 s_max 1.00 ret  -42.75
+[teacher_s1] ep   75 step  13962 sr25 0.32 s_max 0.25 ret   -8.50
+[teacher_s2] ep  100 step  17796 sr25 0.36 s_max 0.25 ret  -11.08
+[teacher_s3] ep  150 step  19521 sr25 0.32 s_max 0.25 ret  -12.54
+[abl_ddpg_s1] ep  125 step  19019 sr25 0.60 s_max 0.25 ret   -0.48
+[teacher_s1] ep  100 step  17818 sr25 0.60 s_max 0.25 ret    3.06
+[teacher_s2] ep  125 step  21044 sr25 0.52 s_max 0.25 ret   -2.71
+[teacher_s3] ep  175 step  23117 sr25 0.80 s_max 0.25 ret   10.49
+[abl_ddpg_s1] ep  150 step  22364 sr25 0.56 s_max 0.25 ret   -3.94
+[abl_unif_s1] ep  100 step  20970 sr25 0.08 s_max 1.00 ret  -14.14
+[teacher_s1] ep  125 step  21037 sr25 0.72 s_max 0.30 ret    8.12
+[teacher_s2] ep  150 step  24972 sr25 0.68 s_max 0.25 ret    7.75
+[abl_ddpg_s1] ep  175 step  25366 sr25 0.56 s_max 0.25 ret   -3.94
+[teacher_s3] ep  200 step  26344 sr25 0.72 s_max 0.35 ret    7.20
+[abl_ddpg_s1] ep  200 step  28491 sr25 0.32 s_max 0.25 ret  -21.76
+[teacher_s3] ep  225 step  29083 sr25 0.84 s_max 0.40 ret   16.14
+[teacher_s1] ep  150 step  25542 sr25 0.72 s_max 0.35 ret   16.43
+[teacher_s2] ep  175 step  28891 sr25 0.88 s_max 0.30 ret   10.69
+[abl_unif_s1] ep  125 step  27477 sr25 0.04 s_max 1.00 ret  -18.94
+[abl_ddpg_s1] ep  225 step  32144 sr25 0.36 s_max 0.25 ret  -16.62
+[teacher_s3] ep  250 step  33005 sr25 0.76 s_max 0.45 ret    9.90
+[teacher_s2] ep  200 step  32888 sr25 0.88 s_max 0.40 ret   16.63
+[teacher_s1] ep  175 step  30225 sr25 0.44 s_max 0.35 ret   -4.01
+[abl_ddpg_s1] ep  250 step  36082 sr25 0.64 s_max 0.25 ret   -1.16
+[teacher_s3] ep  275 step  36153 sr25 0.96 s_max 0.50 ret   20.17
+[abl_unif_s1] ep  150 step  33762 sr25 0.04 s_max 1.00 ret  -22.78
+[teacher_s2] ep  225 step  36513 sr25 0.84 s_max 0.45 ret   13.89
+[teacher_s1] ep  200 step  34023 sr25 0.76 s_max 0.40 ret   13.28
+[abl_ddpg_s1] ep  275 step  39400 sr25 0.40 s_max 0.25 ret  -11.37
+[teacher_s3] ep  300 step  39699 sr25 0.80 s_max 0.60 ret    9.23
+[teacher_s1] ep  225 step  37364 sr25 0.80 s_max 0.45 ret   11.89
+[teacher_s2] ep  250 step  40782 sr25 0.84 s_max 0.50 ret   16.51
+[abl_ddpg_s1] ep  300 step  42362 sr25 0.28 s_max 0.25 ret  -19.42
+[abl_unif_s1] ep  175 step  40015 sr25 0.04 s_max 1.00 ret  -24.60
+[teacher_s3] ep  325 step  43203 sr25 0.64 s_max 0.65 ret    1.79
+[teacher_s1] ep  250 step  40950 sr25 0.84 s_max 0.50 ret   19.35
+[abl_ddpg_s1] ep  325 step  44846 sr25 0.52 s_max 0.25 ret   -2.21
+[teacher_s2] ep  275 step  45660 sr25 0.76 s_max 0.55 ret   13.23
+[teacher_s3] ep  350 step  46362 sr25 0.80 s_max 0.70 ret    9.81
+[teacher_s1] ep  275 step  45395 sr25 0.72 s_max 0.55 ret   11.83
+[abl_ddpg_s1] ep  350 step  48513 sr25 0.44 s_max 0.25 ret  -10.09
+[abl_unif_s1] ep  200 step  46598 sr25 0.08 s_max 1.00 ret  -13.66
+[teacher_s3] ep  375 step  49577 sr25 0.84 s_max 0.75 ret   15.73
+[teacher_s2] ep  300 step  50180 sr25 0.68 s_max 0.65 ret    7.42
+[teacher_s3] ep  400 step  51941 sr25 1.00 s_max 0.85 ret   26.20
+[abl_ddpg_s1] ep  375 step  52488 sr25 0.36 s_max 0.25 ret  -21.21
+[teacher_s2] ep  325 step  53459 sr25 0.80 s_max 0.70 ret   15.06
+[teacher_s3] ep  425 step  54913 sr25 0.88 s_max 0.90 ret   17.68
+[abl_unif_s1] ep  225 step  53228 sr25 0.00 s_max 1.00 ret  -29.25
+[teacher_s1] ep  300 step  52806 sr25 0.00 s_max 0.57 ret  -19.04
+[teacher_s3] ep  450 step  57845 sr25 0.96 s_max 0.95 ret   22.30
+[teacher_s2] ep  350 step  57875 sr25 0.60 s_max 0.75 ret    4.64
+[abl_ddpg_s1] ep  400 step  56980 sr25 0.40 s_max 0.25 ret  -12.32
+[teacher_s3] ep  475 step  60628 sr25 0.88 s_max 1.00 ret   16.96
+[abl_unif_s1] ep  250 step  58979 sr25 0.16 s_max 1.00 ret  -20.35
+[teacher_s2] ep  375 step  61209 sr25 0.84 s_max 0.80 ret   17.49
+[teacher_s1] ep  325 step  59160 sr25 0.00 s_max 0.55 ret  -30.79
+[abl_ddpg_s1] ep  425 step  60888 sr25 0.36 s_max 0.25 ret  -21.26
+[teacher_s3] ep  500 step  63721 sr25 0.92 s_max 1.00 ret   21.10
+[teacher_s1] ep  350 step  63087 sr25 0.00 s_max 0.52 ret  -41.75
+[teacher_s2] ep  400 step  64863 sr25 0.80 s_max 0.90 ret   12.50
+[abl_unif_s1] ep  275 step  64955 sr25 0.20 s_max 1.00 ret  -13.09
+[teacher_s3] ep  525 step  66667 sr25 0.76 s_max 1.00 ret   11.93
+[abl_ddpg_s1] ep  450 step  65804 sr25 0.24 s_max 0.25 ret  -21.85
+[teacher_s2] ep  425 step  68515 sr25 0.84 s_max 0.95 ret   14.36
+[teacher_s3] ep  550 step  69864 sr25 0.80 s_max 1.00 ret   13.50
+[teacher_s1] ep  375 step  69459 sr25 0.00 s_max 0.50 ret  -35.40
+[abl_ddpg_s1] ep  475 step  70095 sr25 0.36 s_max 0.25 ret  -13.49
+[teacher_s2] ep  450 step  72114 sr25 0.84 s_max 1.00 ret   14.18
+[abl_unif_s1] ep  300 step  71507 sr25 0.04 s_max 1.00 ret  -19.71
+[teacher_s3] ep  575 step  72708 sr25 0.88 s_max 1.00 ret   15.27
+[teacher_s2] ep  475 step  75611 sr25 0.84 s_max 1.00 ret   14.78
+[teacher_s3] ep  600 step  75455 sr25 0.96 s_max 1.00 ret   25.10
+[abl_ddpg_s1] ep  500 step  74252 sr25 0.24 s_max 0.25 ret  -20.69
+[teacher_s1] ep  400 step  75203 sr25 0.24 s_max 0.45 ret   -4.84
+[teacher_s2] ep  500 step  78642 sr25 0.92 s_max 1.00 ret   20.34
+[teacher_s3] ep  625 step  78006 sr25 0.88 s_max 1.00 ret   21.13
+[teacher_s2] ep  525 step  81436 sr25 0.92 s_max 1.00 ret   21.59
+[abl_unif_s1] ep  325 step  78339 sr25 0.04 s_max 1.00 ret  -21.33
+[teacher_s1] ep  425 step  79641 sr25 0.56 s_max 0.45 ret   -1.65
+[teacher_s3] ep  650 step  80652 sr25 0.92 s_max 1.00 ret   18.43
+[teacher_s2] ep  550 step  84310 sr25 0.92 s_max 1.00 ret   17.17
+[abl_ddpg_s1] ep  525 step  79412 sr25 0.16 s_max 0.25 ret  -19.63
+[teacher_s2] ep  575 step  87203 sr25 0.80 s_max 1.00 ret   14.49
+[teacher_s3] ep  675 step  83925 sr25 0.80 s_max 1.00 ret   13.97
+[teacher_s1] ep  450 step  83369 sr25 0.44 s_max 0.45 ret   -8.45
+[teacher_s2] ep  600 step  89688 sr25 0.88 s_max 1.00 ret   20.16
+[teacher_s2] done in 1113.8s final sr100=0.87
+[train] done ('teacher', 2)
+[abl_ddpg_s1] ep  550 step  83742 sr25 0.12 s_max 0.25 ret  -27.65
+[abl_unif_s1] ep  350 step  85283 sr25 0.04 s_max 1.00 ret  -19.48
+[teacher_s3] ep  700 step  86980 sr25 0.88 s_max 1.00 ret   15.22
+[teacher_s1] ep  475 step  86823 sr25 0.76 s_max 0.45 ret    8.60
+[teacher_s1] done in 1177.0s final sr100=0.55
+[train] done ('teacher', 1)
+[abl_unif_s1] ep  375 step  89453 sr25 0.00 s_max 1.00 ret  -31.14
+[teacher_s3] ep  725 step  90000 sr25 0.88 s_max 1.00 ret   18.74
+[teacher_s3] done in 1179.2s final sr100=0.87
+[train] done ('teacher', 3)
+[abl_unif_s1] done in 1184.7s final sr100=0.02
+[train] done ('abl_unif', 1)
+[abl_ddpg_s1] ep  575 step  89818 sr25 0.12 s_max 0.25 ret  -23.49
+[abl_ddpg_s1] done in 1195.9s final sr100=0.16
+[train] done ('abl_ddpg', 1)
+[distill] 7 jobs on 12 workers
+[abl_ff_s1] ep   25 step   4439 distill-loss 0.3193 sr25 0.60
+[proteus_s3] ep   25 step   2421 distill-loss 0.0038 sr25 0.80
+[abl_w5_s1] ep   25 step   4270 distill-loss 0.3096 sr25 0.60
+[abl_ff_s1] ep   50 step   7873 distill-loss 0.3960 sr25 0.76
+[proteus_s1] ep   25 step   3378 distill-loss 0.1302 sr25 0.76
+[abl_noflow_s1] ep   25 step   3932 distill-loss 0.3791 sr25 0.72
+[proteus_s2] ep   25 step   3306 distill-loss 0.0043 sr25 0.76
+[abl_offline_s1] ep   25 step   4098 distill-loss 0.0517 sr25 0.60
+[abl_ff_s1] ep   75 step  12243 distill-loss 0.4142 sr25 0.60
+[abl_w5_s1] ep   50 step   8585 distill-loss 0.2828 sr25 0.68
+[abl_ff_s1] ep  100 step  16307 distill-loss 0.4237 sr25 0.68
+[proteus_s3] ep   50 step   5573 distill-loss 0.0048 sr25 0.88
+[proteus_s2] ep   50 step   6148 distill-loss 0.0030 sr25 0.92
+[abl_noflow_s1] ep   50 step   7186 distill-loss 0.3832 sr25 0.72
+[abl_w5_s1] ep   75 step  12287 distill-loss 0.2927 sr25 0.56
+[abl_ff_s1] done in 54.2s final-loss 0.4257
+[distill] done ('abl_ff', 1)
+[abl_offline_s1] ep   50 step   7661 distill-loss 0.0535 sr25 0.76
+[proteus_s1] ep   50 step   7669 distill-loss 0.0747 sr25 0.68
+[proteus_s2] ep   75 step   8733 distill-loss 0.0020 sr25 0.76
+[abl_noflow_s1] ep   75 step  10528 distill-loss 0.3055 sr25 0.68
+[abl_w5_s1] ep  100 step  16173 distill-loss 0.3390 sr25 0.60
+[proteus_s3] ep   75 step   8972 distill-loss 0.0041 sr25 0.84
+[abl_offline_s1] ep   75 step  12374 distill-loss 0.1103 sr25 0.48
+[abl_w5_s1] ep  125 step  19849 distill-loss 0.3306 sr25 0.68
+[abl_w5_s1] done in 87.7s final-loss 0.3330
+[distill] done ('abl_w5', 1)
+[proteus_s2] ep  100 step  11433 distill-loss 0.0027 sr25 0.92
+[proteus_s1] ep   75 step  12328 distill-loss 0.1405 sr25 0.56
+[proteus_s3] ep  100 step  11985 distill-loss 0.0041 sr25 0.80
+[abl_noflow_s1] ep  100 step  14507 distill-loss 0.3664 sr25 0.72
+[proteus_s2] ep  125 step  14643 distill-loss 0.0034 sr25 0.80
+[abl_offline_s1] ep  100 step  16754 distill-loss 0.0919 sr25 0.64
+[abl_noflow_s1] ep  125 step  18015 distill-loss 0.2984 sr25 0.72
+[proteus_s3] ep  125 step  14572 distill-loss 0.0040 sr25 0.96
+[proteus_s2] ep  150 step  17556 distill-loss 0.0035 sr25 0.88
+[proteus_s1] ep  100 step  16435 distill-loss 0.2165 sr25 0.76
+[abl_noflow_s1] done in 136.6s final-loss 0.3017
+[distill] done ('abl_noflow', 1)
+[abl_offline_s1] done in 140.1s final-loss 0.0772
+[distill] done ('abl_offline', 1)
+[proteus_s3] ep  150 step  17654 distill-loss 0.0045 sr25 0.92
+[proteus_s2] done in 148.7s final-loss 0.0030
+[distill] done ('proteus', 2)
+[proteus_s1] done in 154.6s final-loss 0.1938
+[distill] done ('proteus', 1)
+[proteus_s3] done in 162.3s final-loss 0.0043
+[distill] done ('proteus', 3)
+[eval] 21 jobs on 12 workers
+[raw_dr_s1] sweep done (25.7s)
+[raw_dr_s3] sweep done (27.6s)
+[raw_dr_s2] sweep done (31.1s)
+[raw_dr_s1] sweep_unseen done
+[raw_dr_s3] sweep_unseen done
+[raw_dr_s2] sweep_unseen done
+[raw_dr_s1] heldout done
+[raw_dr_s3] heldout done
+[raw_dr_s1] onset done
+[raw_dr_s1] latency: 0.07 ms
+[eval] done ('raw_dr', 1, ['sweep', 'sweep_unseen', 'heldout', 'onset', 'latency'])
+[raw_dr_s3] onset done
+[raw_dr_s3] latency: 0.06 ms
+[eval] done ('raw_dr', 3, ['sweep', 'sweep_unseen', 'heldout', 'onset', 'latency'])
+[raw_dr_s2] heldout done
+[raw_dr_s2] onset done
+[raw_dr_s2] latency: 0.06 ms
+[eval] done ('raw_dr', 2, ['sweep', 'sweep_unseen', 'heldout', 'onset', 'latency'])
+[teacher_s3] sweep done (79.7s)
+[dr_s1] sweep done (80.1s)
+[nom_s1] sweep done (82.5s)
+[nom_s3] sweep done (86.5s)
+[nom_s2] sweep done (87.1s)
+[teacher_s2] sweep done (97.3s)
+[dr_s3] sweep done (98.2s)
+[dr_s2] sweep done (100.5s)
+[dr_s1] sweep_unseen done
+[teacher_s3] sweep_unseen done
+[teacher_s1] sweep done (124.7s)
+[nom_s1] sweep_unseen done
+[nom_s2] sweep_unseen done
+[nom_s3] sweep_unseen done
+[teacher_s2] sweep_unseen done
+[dr_s3] sweep_unseen done
+[dr_s2] sweep_unseen done
+[proteus_s2] sweep done (92.9s)
+[proteus_s3] sweep done (92.8s)
+[dr_s1] heldout done
+[proteus_s1] sweep done (111.9s)
+[nom_s1] heldout done
+[teacher_s3] heldout done
+[nom_s2] heldout done
+[nom_s3] heldout done
+[dr_s1] onset done
+[dr_s1] latency: 0.59 ms
+[eval] done ('dr', 1, ['sweep', 'sweep_unseen', 'heldout', 'onset', 'latency'])
+[nom_s1] onset done
+[nom_s1] latency: 0.72 ms
+[eval] done ('nom', 1, ['sweep', 'sweep_unseen', 'heldout', 'onset', 'latency'])
+[teacher_s1] sweep_unseen done
+[teacher_s3] onset done
+[nom_s2] onset done
+[nom_s2] latency: 0.86 ms
+[eval] done ('nom', 2, ['sweep', 'sweep_unseen', 'heldout', 'onset', 'latency'])
+[nom_s3] onset done
+[nom_s3] latency: 0.93 ms
+[eval] done ('nom', 3, ['sweep', 'sweep_unseen', 'heldout', 'onset', 'latency'])
+[teacher_s2] heldout done
+[proteus_s2] sweep_unseen done
+[dr_s3] heldout done
+[dr_s2] heldout done
+[proteus_s3] sweep_unseen done
+[teacher_s2] onset done
+[dr_s3] onset done
+[dr_s3] latency: 0.85 ms
+[eval] done ('dr', 3, ['sweep', 'sweep_unseen', 'heldout', 'onset', 'latency'])
+[dr_s2] onset done
+[dr_s2] latency: 0.94 ms
+[eval] done ('dr', 2, ['sweep', 'sweep_unseen', 'heldout', 'onset', 'latency'])
+[proteus_s1] sweep_unseen done
+[teacher_s1] heldout done
+[proteus_s2] heldout done
+[teacher_s3] intervention done
+[teacher_s3] latency: 0.86 ms
+[eval] done ('teacher', 3, ['sweep', 'sweep_unseen', 'heldout', 'onset', 'latency', 'intervention'])
+[proteus_s3] heldout done
+[teacher_s1] onset done
+[proteus_s2] onset done
+[proteus_s3] onset done
+[teacher_s2] intervention done
+[proteus_s1] heldout done
+[teacher_s2] latency: 0.63 ms
+[eval] done ('teacher', 2, ['sweep', 'sweep_unseen', 'heldout', 'onset', 'latency', 'intervention'])
+[abl_w5_s1] sweep done (103.6s)
+[abl_w5_s1] latency: 0.93 ms
+[eval] done ('abl_w5', 1, ['sweep', 'latency'])
+[abl_noflow_s1] sweep done (108.4s)
+[proteus_s1] onset done
+[abl_unif_s1] sweep done (126.2s)
+[eval] done ('abl_unif', 1, ['sweep'])
+[abl_ff_s1] sweep done (97.9s)
+[abl_ff_s1] latency: 0.72 ms
+[eval] done ('abl_ff', 1, ['sweep', 'latency'])
+[abl_ddpg_s1] sweep done (131.6s)
+[eval] done ('abl_ddpg', 1, ['sweep'])
+[abl_offline_s1] sweep done (105.1s)
+[abl_offline_s1] latency: 1.13 ms
+[eval] done ('abl_offline', 1, ['sweep', 'latency'])
+[proteus_s2] intervention done
+[proteus_s2] latency: 1.19 ms
+[eval] done ('proteus', 2, ['sweep', 'sweep_unseen', 'heldout', 'onset', 'latency', 'intervention'])
+[proteus_s3] intervention done
+[teacher_s1] intervention done
+[proteus_s3] latency: 1.15 ms
+[eval] done ('proteus', 3, ['sweep', 'sweep_unseen', 'heldout', 'onset', 'latency', 'intervention'])
+[teacher_s1] latency: 0.83 ms
+[eval] done ('teacher', 1, ['sweep', 'sweep_unseen', 'heldout', 'onset', 'latency', 'intervention'])
+[abl_noflow_s1] heldout done
+[abl_noflow_s1] latency: 0.81 ms
+[eval] done ('abl_noflow', 1, ['sweep', 'heldout', 'latency'])
+[proteus_s1] intervention done
+[proteus_s1] latency: 0.92 ms
+[eval] done ('proteus', 1, ['sweep', 'sweep_unseen', 'heldout', 'onset', 'latency', 'intervention'])

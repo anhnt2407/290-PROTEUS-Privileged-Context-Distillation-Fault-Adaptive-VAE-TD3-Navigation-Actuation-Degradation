@@ -80,16 +80,23 @@ HELDOUT_FAULT_TYPES = ["deadzone"]
 
 @dataclass
 class FaultConfig:
-    gain_max_loss: float = 0.65      # g = 1 - gain_max_loss * s  (worst gain 0.35)
-    bias_yaw_max: float = 0.30       # |yaw-rate bias| at s=1 [rad/s]
-    latency_max_ticks: int = 4       # L = round(4 s) control periods
-    slip_sigma_max: float = 0.18     # multiplicative wheel noise std at s=1
-    slip_burst_prob: float = 0.06    # per-tick burst probability at s=1
-    slip_burst_gain: float = 0.35    # wheel gain during a slip burst
-    slip_burst_mean_len: int = 3     # geometric mean burst duration [ticks]
-    droop_max: float = 0.45          # wheel speed ceiling reduced by up to 45 %
-    deadzone_max: float = 0.22       # commands below this fraction of wheel max -> 0
-    encoder_scale_max: float = 0.45  # odometry wheel rates scaled by (1 - 0.45 s)
+    # Magnitudes are calibrated so that severity 1 defeats pure feedback on
+    # the feedback-breaking axes (gain asymmetry, latency, deadzone) while
+    # bias/slip/droop probe the limits of feedback compensability: a 10 Hz
+    # closed loop absorbs milder settings almost for free.
+    gain_max_loss: float = 0.85      # g = 1 - gain_max_loss * s  (worst gain 0.15)
+    bias_yaw_max: float = 1.20       # |yaw-rate bias| at s=1 [rad/s] (2/3 authority)
+    latency_max_ticks: int = 10      # L = round(10 s) control periods (1.0 s)
+    slip_sigma_max: float = 0.40     # multiplicative wheel noise std at s=1
+    slip_burst_prob: float = 0.15    # per-tick burst probability at s=1
+    slip_burst_gain: float = 0.05    # wheel gain during a slip burst (near stall)
+    slip_burst_mean_len: int = 12    # geometric mean burst duration [ticks]
+    droop_max: float = 0.65          # speed ceiling cut: timeout pressure at s=1
+    deadzone_max: float = 0.35       # commands below this fraction of wheel max -> 0
+    encoder_scale_max: float = 0.60  # odometry wheel rates scaled by (1 - 0.6 s)
+    p_extreme: float = 0.08          # rare-catastrophe rehearsal: severity ~ U(.85,1)
+                                     # regardless of the curriculum ceiling, so the
+                                     # context map covers the deep end
     # Training mixture over episodes
     p_nominal: float = 0.15
     p_single: float = 0.55

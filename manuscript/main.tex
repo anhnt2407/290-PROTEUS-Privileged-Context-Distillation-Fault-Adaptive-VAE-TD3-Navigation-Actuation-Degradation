@@ -680,10 +680,10 @@ $d_c$ / window $W$ & 8 / 25 & policy noise / delay & 0.2 / 2 \\
 TCN channels & 32 & OU $\sigma$ (decay) & 0.30$\to$0.10 \\
 distill steps / lr & 20k / $3{\cdot}10^{-4}$ & & \\
 \midrule
-\multicolumn{4}{l}{\textbf{Fault magnitudes at $s{=}1$}: gain loss 0.65;
-bias 0.30\,rad/s; latency 4 ticks;}\\
-\multicolumn{4}{l}{slip $\sigma$ 0.18 (+bursts); droop 0.45; deadzone 0.22;
-encoder scale 0.45}\\
+\multicolumn{4}{l}{\textbf{Fault magnitudes at $s{=}1$}: gain loss 0.85;
+bias 1.2\,rad/s; latency 10 ticks;}\\
+\multicolumn{4}{l}{slip $\sigma$ 0.4 + near-stall bursts; droop 0.65;
+deadzone 0.35; encoder 0.60}\\
 \multicolumn{4}{l}{\textbf{Curriculum}: $s_{\max}{:}$ 0.25$\to$1.0, $\pm$(0.05,
 0.025), thresholds (0.60, 0.30), $K{=}20$}\\
 \multicolumn{4}{l}{\textbf{Reward}: progress 6/m; heading 0.05; angular 0.03;
@@ -695,7 +695,14 @@ proximity 0.4@0.3\,m;}\\
 \end{table}
 
 \subsection{Protocol and Metrics}
-Headline methods run three seeds; ablations one. Evaluation covers:
+Headline methods run three seeds; ablations one. Training uses an identical
+checkpoint rule for every method: snapshots are taken periodically, and the
+snapshot with the best trailing training success \emph{among those whose
+curriculum ceiling lies within ninety percent of the run's maximum ceiling}
+is deployed --- a guard against the occasional late-stage collapse of
+deterministic-policy learners that cannot favor early, easy-curriculum
+policies; targets are clamped to the plausible return range for the same
+reason. Selected steps are reported in the released run summaries. Evaluation covers:
 (i) \emph{persistent sweeps}: each trained fault axis over seven severity
 levels, forty episodes per cell, on training-family layouts; (ii)
 \emph{unseen layouts}: reduced grids on the held-out family; (iii)
