@@ -1,0 +1,12 @@
+[train] 14 jobs on 12 workers
+[nom_s2] ep   25 step   2800 sr25 0.04 s_max 1.00 ret  -35.34
+[teacher_s3] ep   25 step   2779 sr25 0.04 s_max 0.25 ret  -39.33
+[raw_dr_s3] ep   25 step   3358 sr25 0.04 s_max 0.25 ret  -36.63
+[raw_dr_s1] ep   25 step   3845 sr25 0.04 s_max 0.25 ret  -37.70
+[nom_s1] ep   25 step   3272 sr25 0.04 s_max 1.00 ret  -35.91
+[dr_s3] ep   25 step   3399 sr25 0.04 s_max 0.25 ret  -36.90
+[raw_dr_s2] ep   25 step   4091 sr25 0.04 s_max 0.25 ret  -28.92
+[nom_s3] ep   25 step   3848 sr25 0.00 s_max 1.00 ret  -37.97
+[teacher_s1] ep   25 step   3812 sr25 0.08 s_max 0.25 ret  -36.21
+[dr_s2] ep   25 step   4235 sr25 0.04 s_max 0.25 ret  -29.62
+[teacher_s2] ep   25 step   3944 sr25 0.04 s_max 0.25 ret  -29.77

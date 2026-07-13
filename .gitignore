@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+code/results/corpus/
+code/results/runs/*/agent.pt
+code/results/runs/*/student.pt
+code/results/vae/vae.pt
+*.npz
+manuscript/*.aux
+manuscript/*.log
+manuscript/*.out
+manuscript/*.blg
+manuscript/*.bbl
+manuscript/*.synctex.gz

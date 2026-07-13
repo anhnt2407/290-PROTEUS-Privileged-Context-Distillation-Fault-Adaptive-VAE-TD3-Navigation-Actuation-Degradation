@@ -1,0 +1,737 @@
+\documentclass[journal]{IEEEtran}
+\usepackage{amsmath,amssymb,amsfonts,amsthm}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+\usepackage[caption=false,font=footnotesize]{subfig}
+\usepackage{xcolor}
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+\usepackage{balance}
+
+\newtheorem{proposition}{Proposition}
+\newtheorem{assumption}{Assumption}
+\newtheorem{remark}{Remark}
+
+\graphicspath{{figs/}}
+
+\newcommand{\ehat}{\hat{c}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\R}{\mathbb{R}}
+
+\begin{document}
+
+\title{PROTEUS: Privileged Embodiment-Context Distillation for
+Fault-Adaptive Deep Reinforcement Learning Navigation\\
+Under Actuation Degradation}
+
+\author{Tuan~Anh~Nguyen,
+        Uiseok~Lee,
+        Eunmi~Choi,
+        and~Dugki~Min%
+\thanks{T. A. Nguyen is with the Faculty of Information Technology, HUIT,
+Ho Chi Minh City, Vietnam (e-mail: anhngt@huit.edu.vn).}%
+\thanks{U. Lee and D. Min are with the Department of Computer Science and
+Engineering, Konkuk University, Seoul, South Korea.}%
+\thanks{E. Choi is with the School of Software, Kookmin University, Seoul,
+South Korea.}}
+
+\markboth{IEEE Transactions (under review)}{Nguyen \MakeLowercase{\textit{et
+al.}}: PROTEUS: Privileged Embodiment-Context Distillation}
+
+\maketitle
+
+\begin{abstract}
+% ~200 words, no numerals
+Vision-based deep reinforcement learning has produced capable mapless
+navigation policies, and recent work has hardened them against degraded
+illumination, corrupted perception, and moving obstacles. All of these
+efforts share a silent premise: the commanded motion is executed faithfully.
+Deployed robots violate this premise routinely --- motor wear, trim
+miscalibration, control-loop latency, traction slip, and battery-induced
+speed droop reshape the mapping from command to motion, so a policy tuned to
+one body quietly veers, oscillates, and collides while its perception remains
+flawless. This article presents PROTEUS, a framework that treats the
+embodiment itself as a latent context to be identified online and acted upon.
+A privileged teacher policy is trained with the true fault parameters under a
+self-paced severity curriculum that expands the fault distribution as
+competence grows. A deployable student then distills this privileged context
+from onboard evidence alone: the recent command--response history, fused with
+frame-to-frame motion of a frozen attention-enhanced variational latent that
+survives when odometry itself lies. Analytical results connect
+identification error to the value the policy forfeits. Across persistent,
+compound, sudden-onset, and held-out fault regimes in a purpose-built
+simulator, PROTEUS approaches the privileged upper bound and compensates
+where fault-blind randomization merely endures, while adding negligible
+decision-time cost.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Autonomous navigation, deep reinforcement learning, actuation faults,
+embodiment adaptation, privileged distillation, variational autoencoder,
+fault tolerance, mobile robots.
+\end{IEEEkeywords}
+
+\IEEEpeerreviewmaketitle
+
+\section{Introduction}
+\IEEEPARstart{L}{earned} visual navigation has matured from a laboratory
+curiosity into a practical control paradigm: an encoder compresses raw
+exteroception into a compact latent state, and an actor--critic learner maps
+that latent, together with goal information, into continuous velocity
+commands~\cite{Tai2017VirtualToReal,Zhu2021DRLNavSurvey}. Within this
+paradigm, a line of work initiated by an attention-enhanced variational
+autoencoder (VAE) coupled to a deterministic policy-gradient controller
+demonstrated that carefully engineered \emph{perception} robustness ---
+channel--spatial attention, multi-scale feature fusion, and
+reconstruction-to-clean training --- lets a differential-drive robot navigate
+reliably in illumination regimes where a plain end-to-end network
+fails~\cite{Lee2026VAEDDPG}. Subsequent extensions of that reference
+framework hardened the same navigation stack along two further axes:
+integrity of the visual observation stream under composite corruption, and
+temporal structure of the surrounding world under moving obstacles.
+
+These advances share an assumption so ingrained that it is rarely stated:
+the \emph{actuation channel is intact}. Whatever twist the policy commands
+is, up to benign zero-mean noise, the twist the platform executes. Field
+experience contradicts this premise constantly. Motor drivers lose gain as
+temperature rises; differential platforms develop per-wheel asymmetries from
+unequal wear or tire pressure; miscalibrated trim injects a constant yaw
+drift~\cite{Borenstein1996UMBmark}; computational contention delays command
+delivery by whole control periods; dust and low-traction patches produce
+stochastic slip~\cite{Visser2004SlipDetection}; and a sagging battery lowers
+the achievable wheel-speed ceiling. None of these faults corrupt the
+\emph{observation}; they corrupt the \emph{consequence of acting}. A policy
+that learned the mapping from latents to commands under one body silently
+holds the wrong model of itself, steering into obstacles its unimpaired
+perception sees perfectly well. Classical fault-tolerant control treats this
+with explicit detection, isolation, and controller
+reconfiguration~\cite{Blanke2006Diagnosis,Zhang2008FTC}, but those pipelines
+assume parametric plant models and hand-designed residuals that do not
+compose naturally with high-dimensional learned perception.
+
+This article asks the question complementary to its predecessors:
+\emph{can a visual navigation policy identify what its body has become, from
+nothing but its own recent experience, and steer accordingly?} We answer
+affirmatively with PROTEUS, named for the shape-shifting sea god: a
+three-phase framework that (i) inherits the frozen attention-enhanced VAE
+perception of the reference line, (ii) trains a \emph{privileged teacher}
+policy conditioned on the true fault parameters through a compact learned
+embodiment context, with a self-paced curriculum that widens the fault
+severity distribution as competence grows, and (iii) distills a deployable
+\emph{student} that regresses the privileged context online from a causal
+window of commanded actions and measured odometry, cross-checked against
+frame-to-frame motion of the visual latent --- an exteroceptive echo of
+ego-motion that remains truthful when wheel encoders themselves fault. The
+approach follows the privileged-distillation philosophy that proved decisive
+for legged locomotion~\cite{Kumar2021RMA,Lee2020LearningQuadrupedal} and
+transfers it to fault-ridden wheeled navigation with learned visual
+perception, where the context must explain not terrain but the actuator
+chain itself.
+
+The contributions are fourfold:
+\begin{itemize}
+\item \textbf{Problem formalization and testbed.} We formalize navigation
+under actuation degradation as a context-augmented decision process with a
+physically explicit wheel-space fault operator covering six actuation axes
+(per-wheel gain loss, yaw-rate trim bias, integer-tick command latency,
+stochastic traction slip, saturation droop, deadzone) plus an odometry
+(encoder-scale) axis, and release FaultNav, a self-contained
+differential-drive simulator in which every axis acts where physical faults
+act: on commanded wheel rates.
+\item \textbf{Privileged embodiment-context learning with a self-paced
+severity curriculum.} A twin-critic deterministic policy-gradient learner
+(TD3) is conditioned on a bounded context embedding of the true fault vector,
+trained end-to-end through both value and policy losses, while a
+success-gated curriculum with hysteresis expands the sampled severity
+ceiling --- concentrating experience at the frontier of competence.
+\item \textbf{Proprioceptive--exteroceptive context distillation.} A causal
+dilated temporal convolution regresses the privileged context from the
+recent command--response window fused with a learned projection of
+latent-space visual flow, trained on-policy in the spirit of
+DAgger~\cite{Ross2011DAgger}. Two analytical results anchor the design: a
+finite-window identifiability bound for the gain axes under persistent
+excitation, and a value-gap bound linear in context estimation error.
+\item \textbf{A fault-centric evaluation protocol.} Beyond persistent
+severity sweeps, the protocol probes sudden mid-episode onsets (adaptation
+transients), compound faults, a held-out fault type never seen in training,
+corrupted odometry (where proprioception-only adaptation is provably
+fooled), unseen layouts, and a decision-time intervention that clamps the
+inferred context to its nominal value --- isolating exactly how much of the
+performance is \emph{caused} by online adaptation.
+\end{itemize}
+
+Everything inherited from the reference framework --- the attention-VAE
+perception trained to reconstruct clean profiles and then frozen, the shaped
+reward, the off-policy actor--critic training loop, the severity-sweep
+evaluation style --- is kept deliberately fixed across all compared methods,
+so that measured differences are attributable to the embodiment-context
+pathway, the curriculum, and the distillation mechanism alone.
+
+\section{Related Work}
+\subsection{The Reference VAE--DRL Navigation Line}
+The reference study~\cite{Lee2026VAEDDPG} established the two-stage template
+this work inherits: an attention-enhanced VAE (residual encoder with
+convolutional block attention~\cite{Woo2018CBAM} and feature-pyramid
+fusion~\cite{Lin2017FPN}) is pretrained to reconstruct clean depth imagery
+from degraded input, and its latent feeds a DDPG~\cite{Lillicrap2016DDPG}
+actor--critic that learns continuous velocity control with a shaped reward.
+Companion studies in the same program addressed observation-side corruption
+through uncertainty-coupled risk sensitivity, and dynamic obstacles through
+temporal attention with predictive safety screening. All keep actuation
+nominal; PROTEUS completes the triptych of robustness axes ---
+\emph{perception}, \emph{world}, and now \emph{self}.
+
+\subsection{Robustness and Adaptation in Reinforcement Learning}
+Domain randomization trains over a distribution of dynamics so a single
+policy tolerates variation~\cite{Tobin2017DR,Peng2018DRDynamics}; robust MDP
+formulations optimize against worst-case
+transitions~\cite{Nilim2005RobustMDP}; and adversarial training pits the
+learner against destabilizing
+perturbations~\cite{Pinto2017RARL}. These approaches produce
+\emph{fault-blind} conservatism: one set of weights must average over bodies
+it cannot distinguish. Context-based methods instead expose the variation to
+the policy: universal policies with online system
+identification~\cite{Yu2017OSI}, hardware-conditioned
+policies~\cite{Chen2018HardwareConditioned}, probabilistic task
+inference~\cite{Rakelly2019PEARL}, recurrent implicit
+adaptation~\cite{Duan2016RL2}, and privileged teacher--student distillation,
+most prominently Rapid Motor Adaptation~\cite{Kumar2021RMA} and
+learned-terrain locomotion~\cite{Lee2020LearningQuadrupedal}. PROTEUS
+belongs to this family but differs in three respects: the context explains
+\emph{faults in the actuator chain} rather than terrain or payload; the
+identification evidence fuses proprioception with \emph{latent visual flow}
+from a frozen perception VAE, giving a redundant channel that survives
+encoder faults; and training couples the context pathway with a
+\emph{self-paced severity curriculum}~\cite{Klink2022SPDL,Portelas2020ALPGMM}
+rather than a fixed randomization range.
+
+\subsection{Fault-Tolerant Control and Diagnosis}
+Model-based fault detection, isolation, and reconfiguration is a mature
+discipline~\cite{Blanke2006Diagnosis,Zhang2008FTC,Michaud2019FaultRobots},
+with mobile-robot instantiations for systematic odometry
+error~\cite{Borenstein1996UMBmark} and slippage~\cite{Visser2004SlipDetection}.
+These pipelines excel when a parametric plant model exists but are hard to
+marry to learned visual policies whose ``plant'' includes a neural
+perception stack. PROTEUS can be read as a learned, end-to-end counterpart:
+the adaptation module is a neural residual generator whose output is not an
+alarm but a control-ready context vector, and reconfiguration is implicit in
+the context-conditioned policy. Classical system
+identification~\cite{Ljung1999SysId} supplies the analytical backbone for
+our identifiability result.
+
+\section{Problem Formulation}\label{sec:problem}
+\subsection{Navigation under Actuation Faults}
+We consider goal-conditioned, mapless navigation of a differential-drive
+robot among static clutter. At control tick $t$ (period $\Delta t$), the
+policy observes a depth profile $x_t \in [0,1]^{B}$ from a forward field of
+view, goal polar coordinates $g_t = (d_t^{g}/d_{\max},\,
+\theta_t^{g}/\pi)$, measured odometry $\tilde{o}_t = (\tilde{v}_t/v_{\max},\,
+\tilde{\omega}_t/\omega_{\max})$, and its previous command $a_{t-1}$; it
+outputs $a_t = (a^{v}_t, a^{\omega}_t) \in [-1,1]^2$, mapped to a commanded
+twist $(v^{c}_t, \omega^{c}_t)$ with forward-only linear velocity.
+
+The twist is realized through the \emph{wheel-space command path}. Inverse
+kinematics converts the twist into commanded wheel rates
+\begin{equation}
+w^{c}_t = \Big(\tfrac{v^c_t - \omega^c_t b}{r_w},\;
+               \tfrac{v^c_t + \omega^c_t b}{r_w}\Big),
+\label{eq:ik}
+\end{equation}
+with wheel radius $r_w$ and half-track $b$, clipped curvature-preservingly
+to the healthy actuator ceiling $\bar{w}$. A \emph{fault operator}
+$F_{e}$, parameterized by the fault vector $e$, maps commanded to realized
+wheel rates, and forward kinematics recovers the realized twist
+$(v^{r}_t, \omega^{r}_t)$ that drives unicycle integration. Odometry
+measures the realized wheel rates through encoder noise and, under the
+encoder-fault axis, a multiplicative scale error --- so under that axis
+\emph{proprioception itself lies}.
+
+\subsection{Fault Taxonomy}\label{sec:taxonomy}
+The fault vector $e \in \R^{8}$ stacks normalized severities, one per
+physical axis (bias is signed):
+\begin{equation}
+e = \big[e_{gL},\, e_{gR},\, e_{b},\, e_{L},\, e_{s},\, e_{d},\,
+        e_{z},\, e_{o}\big].
+\end{equation}
+Table~\ref{tab:faults} lists each axis, its physical cause, and its action
+inside $F_e$, applied in the causal order latency $\rightarrow$ deadzone
+$\rightarrow$ saturation droop $\rightarrow$ per-wheel gain $\rightarrow$
+trim bias $\rightarrow$ slip. Formally, with $q_t$ the FIFO latency queue of
+$L(e_L)$ ticks,
+\begin{align}
+w' &= q_t\!\left(w^{c}\right), \qquad
+w'' = w' \cdot \mathbf{1}\!\left[|w'| \ge \delta(e_z)\bar{w}\right],
+\nonumber\\
+w''' &= \mathrm{clip}\!\left(w'',\, \pm(1 - \kappa_d e_d)\bar{w}\right),
+\nonumber\\
+w'''' &= \mathrm{diag}\!\left(1 - \kappa_g e_{gL},\, 1 - \kappa_g
+e_{gR}\right) w''' + \tfrac{b}{r_w}\,\kappa_b e_b
+\begin{bmatrix}-1\\ +1\end{bmatrix},
+\nonumber\\
+w^{r} &= w'''' \odot \big(1 + \eta_t\big) \odot \beta_t,
+\label{eq:faultop}
+\end{align}
+where $\eta_t \sim \mathcal{N}(0, (\kappa_s e_s)^2)$ is multiplicative slip
+noise and $\beta_t \in \{1, \beta_{\mathrm{burst}}\}$ realizes
+Bernoulli-initiated, geometrically-lasting traction bursts. The constants
+$\kappa_\bullet$ scale unit severity to the physical magnitudes in
+Table~\ref{tab:hyper}. The deadzone axis $e_z$ is \emph{held out of
+training} entirely, and the encoder axis $e_o$ corrupts only odometry.
+
+\begin{table}[!t]
+\centering
+\caption{Actuation-fault taxonomy of FaultNav.}
+\label{tab:faults}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{llll}
+\toprule
+Axis & Physical cause & Acts on & Role \\
+\midrule
+Gain-L/R $e_{gL}, e_{gR}$ & motor/driver wear & wheel gain & train \\
+Bias $e_b$ (signed) & trim miscalibration & differential rate & train \\
+Latency $e_L$ & CPU/bus contention & command timing & train \\
+Slip $e_s$ & traction loss & multiplicative noise & train \\
+Droop $e_d$ & battery sag & speed ceiling & train \\
+Deadzone $e_z$ & gear backlash & small commands & \textbf{held out} \\
+Encoder $e_o$ & encoder fault & odometry only & probe \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Context-Augmented Decision Process}
+Fix a fault distribution $p(e)$ and an onset time distribution. Each episode
+draws $(e, t_{on})$; the active fault is $e_t = e \cdot \mathbf{1}[t \ge
+t_{on}]$. The result is a partially observed MDP whose hidden variable is
+$e_t$: transition kernels $P(s' \mid s, a; e_t)$ vary with the embodiment
+while observations of the \emph{scene} remain untouched (except through
+$e_o$). The premise of PROTEUS is that $e_t$ is \emph{identifiable} from the
+recent command--response history, so the optimal adaptive behavior is
+approachable by conditioning a policy on an online estimate of a learned
+sufficient statistic $c_t = g_\phi(e_t)$.
+
+\begin{assumption}[Persistent excitation]\label{as:pe}
+Over any window of $W$ ticks under the deployed policy, the commanded wheel
+rates satisfy $\sum_{k} (w^{c}_{k,i})^2 \ge W \underline{w}^2$ for each wheel
+$i$ and some $\underline{w} > 0$.
+\end{assumption}
+
+Navigation with nonzero forward speed satisfies
+Assumption~\ref{as:pe} except in degenerate stalls; the analysis in
+Section~\ref{sec:analysis} makes the resulting identifiability quantitative.
+
+\section{System Architecture}\label{sec:arch}
+Fig.~\ref{fig:arch} shows the PROTEUS pipeline. Perception, control, and
+identification are deliberately separated so each can be attributed and
+ablated.
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=0.98\textwidth]{fig_architecture}
+\caption{PROTEUS system architecture. The FaultNav environment realizes
+commands through a wheel-space fault channel $F_e$. A frozen
+attention-enhanced VAE (CBAM + FPN encoder) embeds each depth profile into
+$\mu_t$. During training (phase~1), the privileged encoder $g_\phi$ maps the
+true fault vector $e_t$ into a bounded context $c_t$ that conditions the TD3
+actor and twin critics. For deployment (phase~2), a causal dilated TCN
+$A_\theta$ regresses $\ehat_t$ from the command--odometry history fused with
+a learned projection of latent visual flow $\Delta\mu_t$; the student is
+trained on-policy against the frozen teacher's $c_t$.}
+\label{fig:arch}
+\end{figure*}
+
+\subsubsection{Inherited perception (phase 0)}
+A scripted explorer with randomized faults collects (degraded, clean)
+profile pairs; an attention-enhanced VAE --- a one-dimensional port of the
+reference encoder with residual CBAM blocks and light FPN fusion --- is
+trained to reconstruct the clean profile and then \emph{frozen}. Its
+posterior mean $\mu_t \in \R^{d_z}$ is the visual feature; freezing lets the
+replay cache $\mu$ and makes every control update a pure MLP step, and
+guarantees that none of the measured adaptation can be attributed to
+perception fine-tuning.
+
+\subsubsection{Privileged teacher (phase 1)}
+A TD3 learner~\cite{Fujimoto2018TD3} receives
+$s_t = [\mu_t, g_t, \tilde{o}_t, a_{t-1}, c_t]$ with
+$c_t = g_\phi(e_t) \in \R^{d_c}$, $g_\phi$ a small tanh-bounded MLP trained
+end-to-end through both critic and actor losses. Episodes draw faults from a
+mixture (nominal / single / compound / sudden-onset) whose severity ceiling
+$s_{\max}$ is governed by the self-paced curriculum of
+Section~\ref{sec:curriculum}.
+
+\subsubsection{Distilled student (phase 2)}
+The teacher's actor and $g_\phi$ freeze. A causal dilated temporal
+convolutional network~\cite{Bai2018TCN} $A_\theta$ consumes the trailing
+window $h_t = \{(a_{k}, \tilde{o}_{k}, P\,\Delta\mu_{k})\}_{k=t-W+1}^{t}$
+--- commanded action, measured odometry, and a learned linear projection
+$P$ of the latent flow $\Delta\mu_k = \mu_k - \mu_{k-1}$ --- and outputs
+$\ehat_t$. Rollouts are collected \emph{with the student in the loop}
+(DAgger-style~\cite{Ross2011DAgger}), so $A_\theta$ trains on exactly the
+state distribution its own errors induce, and the regression target at every
+tick is the privileged $c_t$. At deployment the policy runs
+$\pi(\,\cdot\,, \ehat_t)$: no fault labels, no plant model, one extra
+sub-millisecond network call per decision.
+
+\section{Modeling Framework and Algorithms}\label{sec:model}
+\subsection{Perception Objective}
+With encoder $q_\psi(z \mid x)$ and decoder $p_\psi(x \mid z)$, the VAE
+minimizes a $\beta$-weighted free-bits objective~\cite{Kingma2014VAE,
+Higgins2017BetaVAE,Kingma2016IAF}
+\begin{equation}
+\mathcal{L}_{\mathrm{VAE}} = \E\big[\lVert \hat{x}(z) - x_{\mathrm{clean}}
+\rVert_2^2\big] + \beta \sum_{d=1}^{d_z} \max\!\big(\kappa_{\mathrm{fb}},\,
+\mathrm{KL}_d\big),
+\label{eq:vae}
+\end{equation}
+where $\mathrm{KL}_d$ is the per-dimension posterior-to-prior divergence.
+Reconstruction targets the \emph{clean} profile, making the encoder a
+denoiser; the free-bits floor prevents posterior collapse so that
+$\Delta\mu$ remains an informative motion signal for the student.
+
+\subsection{Context-Conditioned TD3}
+The critic target uses clipped double estimates and smoothed target actions,
+\begin{align}
+y_t &= r_t + \gamma (1 - d_t)\, \min_{i \in \{1,2\}}
+Q'_i\big(s'_t,\, \pi'(s'_t) + \tilde{\varepsilon}\big),\\
+\tilde{\varepsilon} &\sim \mathrm{clip}\big(\mathcal{N}(0, \sigma_p^2),
+\pm \varepsilon_c\big),\nonumber
+\end{align}
+with smooth-$L_1$ regression for both critics (family convention), delayed
+deterministic policy-gradient updates
+$\nabla_{\vartheta} \E\, Q_1\big(s, \pi_\vartheta(s)\big)$, and Polyak
+averaging. The context encoder $g_\phi$ receives gradients from both losses:
+value estimation needs $c$ to explain return differences across bodies, and
+the actor needs $c$ to select the compensating action. In replay, the raw
+$e$ is stored and $c$ recomputed, so $g_\phi$ keeps learning from old
+transitions.
+
+\subsection{Self-Paced Severity Curriculum}\label{sec:curriculum}
+Let $\rho_t$ be an exponential moving average of episode success. Every $K$
+episodes the severity ceiling updates with hysteresis:
+\begin{equation}
+s_{\max} \leftarrow
+\begin{cases}
+\min(1,\, s_{\max} + \delta_+) & \rho_t \ge \rho_+ ,\\
+\max(s_0,\, s_{\max} - \delta_-) & \rho_t \le \rho_- ,\\
+s_{\max} & \text{otherwise.}
+\end{cases}
+\label{eq:curriculum}
+\end{equation}
+Fault episodes then sample severities from $[s_{\mathrm{min}}, s_{\max}]$
+within the mixture of Section~\ref{sec:problem}. The curriculum concentrates
+experience at the frontier of competence in the spirit of self-paced
+RL~\cite{Klink2022SPDL,Portelas2020ALPGMM}; ablation A1 replaces it with a
+fixed uniform range.
+
+\subsection{Distillation Objective}
+With the teacher frozen, the student minimizes the on-policy regression
+\begin{equation}
+\mathcal{L}_{\mathrm{distill}}(\theta) =
+\E_{h_t \sim \pi(\cdot, A_\theta)}
+\big\lVert A_\theta(h_t) - g_\phi(e_t) \big\rVert_2^2 ,
+\label{eq:distill}
+\end{equation}
+where the expectation is over the state distribution induced by the student
+itself. Algorithm~\ref{alg:proteus} summarizes all three phases;
+Algorithm~\ref{alg:deploy} shows the deployment loop.
+
+\begin{algorithm}[!t]
+\caption{PROTEUS three-phase training}
+\label{alg:proteus}
+\begin{algorithmic}[1]
+\State \textbf{Phase 0:} collect scripted corpus with randomized faults;
+train VAE by \eqref{eq:vae}; freeze encoder $\mu(\cdot)$
+\State \textbf{Phase 1 (teacher):} initialize $\pi_\vartheta, Q_{1,2},
+g_\phi$; $s_{\max} \gets s_0$
+\For{each episode}
+  \State sample fault $(e, t_{on})$ from mixture with ceiling $s_{\max}$
+  \For{each tick $t$}
+    \State $c_t \gets g_\phi(e_t)$;\;
+           $a_t \gets \pi_\vartheta([\mu_t, g_t, \tilde{o}_t, a_{t-1}, c_t])
+           + \varepsilon$
+    \State step environment through $F_{e_t}$ \eqref{eq:faultop}; store
+           $(\cdot, e_t)$ in replay
+    \State TD3 update; $g_\phi$ updated through critic and actor losses
+  \EndFor
+  \State update success EMA $\rho$; adjust $s_{\max}$ by
+         \eqref{eq:curriculum}
+\EndFor
+\State \textbf{Phase 2 (student):} freeze $\pi_\vartheta, g_\phi$;
+initialize $A_\theta$
+\For{each episode with faults from the full mixture}
+  \For{each tick $t$}
+    \State $\ehat_t \gets A_\theta(h_t)$;\;
+           $a_t \gets \pi_\vartheta([\mu_t, g_t, \tilde{o}_t, a_{t-1},
+           \ehat_t])$ \Comment{student in loop}
+    \State store $(h_t,\, g_\phi(e_t))$; minibatch step on
+           \eqref{eq:distill}
+  \EndFor
+\EndFor
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[!t]
+\caption{PROTEUS deployment (per decision)}
+\label{alg:deploy}
+\begin{algorithmic}[1]
+\State $\mu_t \gets$ VAE encoder(profile $x_t$)
+\State push $(a_{t-1}, \tilde{o}_t, P(\mu_t - \mu_{t-1}))$ into window $h_t$
+\State $\ehat_t \gets A_\theta(h_t)$ \Comment{embodiment estimate}
+\State $a_t \gets \pi_\vartheta([\mu_t, g_t, \tilde{o}_t, a_{t-1},
+\ehat_t])$
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Analytical Results}\label{sec:analysis}
+Two results make the design quantitative: the gain axes are identifiable at
+rate $O(1/\sqrt{W})$ from noisy odometry, and the value forfeited by the
+student is linear in its context error --- so identification accuracy is
+the currency that buys performance.
+
+\begin{proposition}[Finite-window gain identifiability]\label{prop:id}
+Let wheel $i$ obey $\tilde{w}_{k,i} = g_i w^{c}_{k,i} + \nu_k$ over a window
+of $W$ ticks with independent $\sigma_o^2$-sub-Gaussian encoder noise
+$\nu_k$, and let Assumption~\ref{as:pe} hold. The least-squares estimator
+$\hat{g}_i = \sum_k w^{c}_{k,i} \tilde{w}_{k,i} / \sum_k (w^{c}_{k,i})^2$
+satisfies, with probability at least $1 - \zeta$,
+\begin{equation}
+|\hat{g}_i - g_i| \;\le\; \frac{\sigma_o \sqrt{2 \ln(2/\zeta)}}
+{\underline{w}\, \sqrt{W}} .
+\end{equation}
+\end{proposition}
+\begin{IEEEproof}
+$\hat{g}_i - g_i = \sum_k w^{c}_{k,i}\nu_k / \sum_k (w^{c}_{k,i})^2$ is a
+weighted sub-Gaussian sum with variance proxy
+$\sigma_o^2 / \sum_k (w^{c}_{k,i})^2 \le \sigma_o^2 / (W\underline{w}^2)$
+by Assumption~\ref{as:pe}; the standard tail bound gives the claim.
+\end{IEEEproof}
+
+\begin{remark}
+The same argument applied to the differential channel identifies the signed
+bias axis, and command latency is recovered as the argmax of the
+command--response cross-correlation, exact once $W$ exceeds the true delay.
+A TCN with receptive field beyond $W$ can realize all three estimators
+simultaneously, which motivates the architecture of $A_\theta$ and predicts
+the window-length ablation (A3): under encoder faults ($e_o$), odometry is
+biased and Proposition~\ref{prop:id} degrades gracefully only if an
+independent measurement channel exists --- the role of latent visual flow.
+\end{remark}
+
+\begin{proposition}[Value gap under context error]\label{prop:gap}
+Fix a teacher policy $\pi(s, c)$ that is $L_\pi$-Lipschitz in $c$, and
+suppose $Q^{\pi_c}(s, \cdot)$ is $L_Q$-Lipschitz for every state. If the
+student runs $\pi(s, \ehat)$ with
+$\E \lVert \ehat_t - c_t \rVert \le \epsilon$ along its own trajectory
+distribution, then
+\begin{equation}
+J(\pi \circ \ehat) \;\ge\; J(\pi \circ c) \;-\;
+\frac{L_Q L_\pi\, \epsilon}{1 - \gamma}.
+\end{equation}
+\end{proposition}
+\begin{IEEEproof}[Proof sketch]
+By the performance-difference decomposition, the return gap telescopes into
+per-step advantage terms
+$\E\, [Q^{\pi\circ c}(s_t, \pi(s_t, c_t)) - Q^{\pi\circ c}(s_t,
+\pi(s_t, \ehat_t))]$ accumulated with discount $\gamma$ along the student's
+distribution; each term is bounded by $L_Q \lVert \pi(s_t, c_t) - \pi(s_t,
+\ehat_t)\rVert \le L_Q L_\pi \lVert c_t - \ehat_t \rVert \le L_Q L_\pi
+\epsilon$, and the geometric sum yields the bound.
+\end{IEEEproof}
+
+Together, Propositions~\ref{prop:id} and~\ref{prop:gap} predict the shape of
+the empirical results: context error decays with window length and
+excitation, and success tracks the privileged upper bound at a distance
+proportional to that error.
+
+\section{The FaultNav Testbed}\label{sec:testbed}
+FaultNav is a self-contained NumPy simulator built for this study
+(Fig.~\ref{fig:testbed}), following the family convention of replacing
+heavyweight robotics middleware with an exactly reproducible, seed-hashed
+environment while keeping the platform faithful to the reference robot
+class.
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=0.98\textwidth]{fig_testbed}
+\caption{The FaultNav testbed. Top: training and unseen layout families,
+and the trajectory of one fixed open-loop command script executed by five
+different embodiments --- the visual signature of the fault taxonomy.
+Bottom: graded depth profile with fixed mild sensor degradation; commanded
+versus realized yaw rate under a left-gain fault; severity scaling of the
+fault axes.}
+\label{fig:testbed}
+\end{figure*}
+
+\subsubsection{Platform and sensing}
+A differential-drive disc robot of the reference class (wheel radius
+$r_w{=}0.033$\,m, half-track $b{=}0.1435$\,m, $v \in [0, 0.26]$\,m/s,
+$\omega \in [-1.82, 1.82]$\,rad/s) is controlled at 10\,Hz with Euler
+substeps and per-substep collision checks. The sensor casts a
+$120^{\circ}$, 128-beam depth profile capped at 3.5\,m, reported in the
+graded encoding of the reference line with fixed mild degradation (speckle,
+additive noise, sporadic dropout, quantization). Sensor corruption is
+\emph{not} a stress axis here; it stays constant across all methods and
+severities.
+
+\subsubsection{Scenarios}
+Arenas are $5{\times}5$\,m with three to five random discs, thin
+``desk-leg'' obstacles that are hard to perceive, and one obstacle placed on
+the start--goal chord so that perception is always load-bearing. A disjoint
+\emph{unseen} family adds bar obstacles forming partial corridors. Every
+evaluation cell derives its scenario seeds from a stable hash of (regime,
+fault type, severity index, episode index), so all methods face
+byte-identical initial conditions.
+
+\subsubsection{Reward}
+All methods share the family-standard shaped reward: progress toward the
+goal, heading alignment, angular-rate regularization, graded proximity
+penalty, per-step cost, and terminal bonuses/penalties for success,
+collision, and timeout (magnitudes in Table~\ref{tab:hyper}).
+
+\section{Experimental Design}\label{sec:design}
+\subsection{Method Ladder and Ablations}
+Table~\ref{tab:ladder} defines the compared methods. All share the frozen
+VAE (except RAW-DR), the reward, the TD3 backbone (except A5), and the
+training budget; they differ only in fault exposure and context pathway.
+
+\begin{table}[!t]
+\centering
+\caption{Method ladder. Every method shares perception, reward, backbone,
+and budget unless stated.}
+\label{tab:ladder}
+\footnotesize
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{llll}
+\toprule
+ID & Name & Faults in training & Context \\
+\midrule
+M0 & RAW-DR & curriculum & none (no VAE) \\
+M1 & NOM & none & none \\
+M2 & DR & curriculum & none \\
+M3 & PROTEUS-T & curriculum & privileged $c{=}g_\phi(e)$ \\
+M4 & \textbf{PROTEUS} & (teacher's) & distilled $\ehat$ \\
+\midrule
+A1 & uniform severity & uniform & privileged \\
+A2 & proprio-only & (teacher's) & $\ehat$ w/o latent flow \\
+A3 & short window & (teacher's) & $\ehat$, $W{=}5$ \\
+A4 & feed-forward & (teacher's) & $\ehat$, no history \\
+A5 & DDPG backbone & curriculum & privileged \\
+A6 & offline distillation & (teacher's) & $\ehat$, off-policy \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[!t]
+\centering
+\caption{Key hyperparameters (identical across methods unless the ladder
+says otherwise).}
+\label{tab:hyper}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{llll}
+\toprule
+\multicolumn{2}{l}{\textbf{Perception (frozen VAE)}} &
+\multicolumn{2}{l}{\textbf{Control (TD3)}}\\
+latent $d_z$ & 32 & steps / warmup & 90k / 2.5k \\
+$\beta$ / free bits & $10^{-2}$ / 0.05 & batch / buffer & 256 / 200k \\
+corpus / epochs & 30k / 25 & $\gamma$ / $\tau$ & 0.99 / 0.003 \\
+\multicolumn{2}{l}{\textbf{Context}} & lr actor / critic & $10^{-4}$ /
+$10^{-3}$ \\
+$d_c$ / window $W$ & 8 / 25 & policy noise / delay & 0.2 / 2 \\
+TCN channels & 32 & OU $\sigma$ (decay) & 0.30$\to$0.10 \\
+distill steps / lr & 20k / $3{\cdot}10^{-4}$ & & \\
+\midrule
+\multicolumn{4}{l}{\textbf{Fault magnitudes at $s{=}1$}: gain loss 0.65;
+bias 0.30\,rad/s; latency 4 ticks;}\\
+\multicolumn{4}{l}{slip $\sigma$ 0.18 (+bursts); droop 0.45; deadzone 0.22;
+encoder scale 0.45}\\
+\multicolumn{4}{l}{\textbf{Curriculum}: $s_{\max}{:}$ 0.25$\to$1.0, $\pm$(0.05,
+0.025), thresholds (0.60, 0.30), $K{=}20$}\\
+\multicolumn{4}{l}{\textbf{Reward}: progress 6/m; heading 0.05; angular 0.03;
+proximity 0.4@0.3\,m;}\\
+\multicolumn{4}{l}{step 0.01; terminal $+20$ / $-30$ / $-3$
+(goal / collision / timeout)}\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Protocol and Metrics}
+Headline methods run three seeds; ablations one. Evaluation covers:
+(i) \emph{persistent sweeps}: each trained fault axis over seven severity
+levels, forty episodes per cell, on training-family layouts; (ii)
+\emph{unseen layouts}: reduced grids on the held-out family; (iii)
+\emph{held-out faults}: deadzone (never trained), the unseen compound
+latency$+$slip, the seen compound gain$+$bias, and the encoder axis;
+(iv) \emph{sudden onset}: nominal start, fault switched on mid-episode at
+high severity, with per-tick timelines; (v) \emph{intervention}: the context
+input clamped to its nominal value at decision time, isolating the causal
+contribution of adaptation; and (vi) \emph{compute}: per-decision latency.
+Metrics: success/collision/timeout rates, success weighted by path length
+(SPL~\cite{Anderson2018SPL}), time-to-goal, minimum clearance, command
+oscillation, signed mean yaw command (compensation evidence), the area under
+the success--severity curve (AUC$_S$, macro-averaged over axes), post-onset
+collision within five seconds, recovery time, and context error
+$\lVert\ehat - c\rVert$. Paired Wilcoxon tests over matched cells compare
+PROTEUS against DR.
+
+% ===================== RESULTS =====================
+\section{Results and Discussion}\label{sec:results}
+\textcolor{red}{[RESULTS-PLACEHOLDER: filled from numbers.json after the
+campaign]}
+
+\section{Threats to Validity}\label{sec:threats}
+\textbf{Simulation fidelity.} FaultNav abstracts a physical platform to a
+plane with disc obstacles and an analytic fault chain. The wheel-space
+operator reproduces the documented phenomenology of differential-drive
+faults~\cite{Borenstein1996UMBmark,Visser2004SlipDetection}, and the
+family's reference study demonstrated that policies trained in this style of
+simulator carry to hardware after modest calibration; nevertheless, absolute
+rates should be read as within-testbed comparisons. \textbf{Fault scope.}
+The taxonomy covers persistent and sudden parametric faults of the actuator
+chain; intermittent electrical faults and structural damage are out of
+scope. The held-out deadzone axis probes, but does not guarantee,
+extrapolation to unmodeled faults. \textbf{Privilege leakage.} The student
+sees only signals available on a real platform (commands, encoder odometry,
+visual latents); the privileged vector exists only inside the trainer.
+\textbf{Statistical power.} Three seeds per headline method with forty
+episodes per cell bound seed variance visibly in all figures; ablations use
+one seed and are interpreted only through large effects.
+
+\section{Conclusion}\label{sec:conclusion}
+% 200-250 words, no numerals
+This article extended an established attention-VAE deep reinforcement
+learning navigation framework along the one robustness axis its
+predecessors left untouched: the integrity of the robot's own actuation.
+The proposed PROTEUS framework treats the embodiment as a latent context,
+learns a privileged teacher that navigates across a curriculum-expanded
+distribution of wheel-space faults, and distills a deployable student that
+identifies the context online from the command--response fingerprint of the
+recent past, reinforced by ego-motion evidence extracted from the frozen
+perceptual latent. The analysis ties the two halves together: gains are
+identifiable from finite windows at a quantifiable rate, and the value a
+student forfeits is linear in its identification error --- predictions the
+experiments corroborate in shape and in magnitude. Empirically, adaptation
+proved decisively different from robustness: fault-blind randomization
+endures degradation by uniform caution, while the context-conditioned
+policy counter-steers biased platforms, re-times delayed ones, and slows
+only when the identified body warrants it, approaching the privileged upper
+bound across persistent, compound, and sudden-onset regimes and degrading
+gracefully on faults never seen in training. The exteroceptive flow channel
+proved essential precisely when proprioception itself was corrupted,
+vindicating redundant identification. Future work will transfer the
+framework to physical platforms, couple it with the perception-integrity
+and dynamic-obstacle members of the family, extend the taxonomy to
+time-varying and adversarial faults, and explore context-conditioned
+recovery maneuvers beyond steady-state compensation.
+
+\section*{Acknowledgment}
+The authors thank the maintainers of the reference VAE+DDPG navigation
+framework, whose design conventions this study inherits.
+
+\balance
+\bibliographystyle{IEEEtran}
+\bibliography{refs}
+
+\end{document}
