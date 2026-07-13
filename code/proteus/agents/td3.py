@@ -77,7 +77,12 @@ class TD3Agent:
         self.opt_actor = torch.optim.AdamW(self.actor.parameters(), rl.actor_lr)
         self.opt_critic = torch.optim.AdamW(self.critic.parameters(),
                                             rl.critic_lr)
-        self.opt_ctx = (torch.optim.AdamW(params_ctx, rl.context_lr)
+        # NO weight decay on the context pathway: its gradient arrives only
+        # through the policy/critic context weights, and default AdamW decay
+        # otherwise prunes g_phi to a constant whenever that signal is weak
+        # (empirically observed exact collapse).
+        self.opt_ctx = (torch.optim.AdamW(params_ctx, rl.context_lr,
+                                          weight_decay=0.0)
                         if params_ctx else None)
 
         # replay rows store the full context-free base observation
@@ -147,6 +152,9 @@ class TD3Agent:
         loss_c = F.smooth_l1_loss(q1, y)
         if not self.is_ddpg:
             loss_c = loss_c + F.smooth_l1_loss(q2, y)
+        if self.use_context:
+            # identifiability regularizer: c must remain decodable to e
+            loss_c = loss_c + self.g_phi.aux_loss(batch["e"])
         self.opt_critic.zero_grad()
         if self.opt_ctx:
             self.opt_ctx.zero_grad()

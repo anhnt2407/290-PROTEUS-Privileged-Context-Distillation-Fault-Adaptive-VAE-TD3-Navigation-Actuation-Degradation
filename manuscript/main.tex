@@ -145,7 +145,11 @@ severity curriculum.} A twin-critic deterministic policy-gradient learner
 (TD3) is conditioned on a bounded context embedding of the true fault vector,
 trained end-to-end through both value and policy losses, while a
 success-gated curriculum with hysteresis expands the sampled severity
-ceiling --- concentrating experience at the frontier of competence.
+ceiling --- concentrating experience at the frontier of competence. We
+identify and cure a silent failure mode of this combination: under a
+competence-gated curriculum the encoder's task gradient vanishes exactly
+when the encoder must form, and weight decay prunes it to a constant; a
+lightweight identifiability regularizer restores it.
 \item \textbf{Proprioceptive--exteroceptive context distillation.} A causal
 dilated temporal convolution regresses the privileged context from the
 recent command--response window fused with a learned projection of
@@ -355,8 +359,10 @@ perception fine-tuning.
 \subsubsection{Privileged teacher (phase 1)}
 A TD3 learner~\cite{Fujimoto2018TD3} receives
 $s_t = [\mu_t, g_t, \tilde{o}_t, a_{t-1}, c_t]$ with
-$c_t = g_\phi(e_t) \in \R^{d_c}$, $g_\phi$ a small tanh-bounded MLP trained
-end-to-end through both critic and actor losses. Episodes draw faults from a
+$c_t = g_\phi(e_t) \in \R^{d_c}$, $g_\phi$ a small MLP whose output passes
+through an affine-free layer normalization --- a scale-fixed, saturation-free
+context space shared verbatim by the student --- trained end-to-end through
+both critic and actor losses. Episodes draw faults from a
 mixture (nominal / single / compound / sudden-onset) whose severity ceiling
 $s_{\max}$ is governed by the self-paced curriculum of
 Section~\ref{sec:curriculum}.
@@ -407,6 +413,36 @@ the actor needs $c$ to select the compensating action. In replay, the raw
 $e$ is stored and $c$ recomputed, so $g_\phi$ keeps learning from old
 transitions.
 
+\subsubsection*{Identifiability regularizer}
+The privileged pathway carries a failure mode that, to our knowledge, has
+not been reported for teacher--student embodiment adaptation: $g_\phi$'s
+\emph{only} task-driven gradient arrives through the context-input weights
+of the actor and critics. Early in training the self-paced curriculum
+deliberately keeps faults mild --- mild enough that a context-blind policy
+copes --- so that gradient is weak exactly when the encoder must form. Under
+a decoupled-weight-decay optimizer the decay term then dominates and prunes
+$g_\phi$ toward a constant function; we observed exact collapse
+($c(e) \equiv c(0)$ to float precision) in the majority of unregularized
+runs, silently reducing the teacher to fault-blind randomization and making
+subsequent distillation vacuously easy. We therefore anchor the encoder with
+a lightweight decoder head $d_\psi$ and the loss
+\begin{equation}
+\mathcal{L}_{\mathrm{ctx}} = \E\big\lVert d_\psi\big(g_\phi(e)\big) - e
+\big\rVert_2^2 ,
+\label{eq:ctxaux}
+\end{equation}
+added to the critic objective (and remove weight decay from the context
+pathway). A second, subtler trap follows: under \eqref{eq:ctxaux} a
+\emph{saturating} output head (e.g., tanh) is driven toward its rails, where
+its gradient vanishes and the encoder freezes at a corner --- collapse by
+saturation rather than by decay. We therefore emit $c$ through an
+affine-free layer normalization: bounded in scale, saturation-free, and
+defining a canonical context space the student inherits.
+Equation~\eqref{eq:ctxaux} plus the normalized head guarantee $c$ remains a
+sufficient statistic of $e$ whatever the instantaneous strength of the RL
+gradient --- cheap structural insurance we recommend for any
+privileged-context learner trained under a competence-gated curriculum.
+
 \subsection{Self-Paced Severity Curriculum}\label{sec:curriculum}
 Let $\rho_t$ be an exponential moving average of episode success. Every $K$
 episodes the severity ceiling updates with hysteresis:
@@ -453,7 +489,8 @@ g_\phi$; $s_{\max} \gets s_0$
            + \varepsilon$
     \State step environment through $F_{e_t}$ \eqref{eq:faultop}; store
            $(\cdot, e_t)$ in replay
-    \State TD3 update; $g_\phi$ updated through critic and actor losses
+    \State TD3 update $+$ identifiability regularizer \eqref{eq:ctxaux};
+           $g_\phi$ updated through critic, actor, and $\mathcal{L}_{\mathrm{ctx}}$
   \EndFor
   \State update success EMA $\rho$; adjust $s_{\max}$ by
          \eqref{eq:curriculum}

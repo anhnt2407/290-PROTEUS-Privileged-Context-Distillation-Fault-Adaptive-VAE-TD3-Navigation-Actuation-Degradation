@@ -220,11 +220,34 @@ def test_agent_update_and_context_grads():
                          float(np.random.randn()),
                          np.random.randn(38).astype(np.float32),
                          np.random.rand(8).astype(np.float32), False)
-    w0 = agent.g_phi.net[0].weight.detach().clone()
+    w0 = agent.g_phi.net[0][0].weight.detach().clone()
     for _ in range(6):
         out = agent.update()
     assert np.isfinite(out["loss_critic"])
-    assert not torch.allclose(w0, agent.g_phi.net[0].weight)
+    assert not torch.allclose(w0, agent.g_phi.net[0][0].weight)
+
+
+def test_context_encoder_stays_informative():
+    """Regression: default AdamW weight decay pruned g_phi to a constant when
+    the RL gradient through the context weights was weak. The identifiability
+    regularizer + decay-free optimizer must keep c sensitive to e."""
+    from proteus.agents.td3 import TD3Agent
+    agent = TD3Agent(DEFAULT, METHODS["teacher"], feat_dim=32)
+    rng = np.random.default_rng(0)
+    for _ in range(600):
+        e = np.zeros(E_DIM, dtype=np.float32)
+        e[rng.integers(E_DIM)] = rng.uniform(0, 1)
+        agent.replay.add(rng.standard_normal(38).astype(np.float32), e,
+                         rng.uniform(-1, 1, 2).astype(np.float32),
+                         float(rng.standard_normal()),
+                         rng.standard_normal(38).astype(np.float32), e, False)
+    for _ in range(300):
+        agent.update()
+    with torch.no_grad():
+        es = torch.eye(E_DIM)
+        cs = agent.g_phi(es)
+        spread = (cs - agent.g_phi(torch.zeros(1, E_DIM))).norm(dim=1)
+    assert float(spread.min()) > 0.05, spread
 
 
 def test_history_tracker_latent_flow():

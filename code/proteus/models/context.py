@@ -16,15 +16,45 @@ from ..config import DistillConfig, E_DIM
 from .blocks import mlp
 
 
+class ContextNorm(nn.Module):
+    """Scale-fixed LayerNorm (no affine) defining the canonical context
+    space shared by teacher and student. A tanh head here is fatal: the
+    identifiability pressure drives pre-activations toward the rails, the
+    tanh gradient dies, and the encoder freezes at a corner (observed as an
+    exact collapse c(e) = const). Affine-free LayerNorm is bounded in scale
+    yet has no saturation region, so gradients always flow."""
+
+    def __init__(self, dim: int):
+        super().__init__()
+        self.ln = nn.LayerNorm(dim, elementwise_affine=False)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.ln(x)
+
+
 class PrivilegedContextEncoder(nn.Module):
-    """g_phi: true fault vector e -> compact bounded context c."""
+    """g_phi: true fault vector e -> compact normalised context c.
+
+    The decoder head d_psi anchors an identifiability regularizer
+    ||d_psi(g_phi(e)) - e||^2: without it, the encoder's only gradient
+    arrives through the policy/critic context weights, and whenever the
+    curriculum keeps faults mild enough for a context-blind policy to cope,
+    weight decay wins the race and prunes g_phi to a constant (observed
+    empirically as an exact collapse of c). The regularizer guarantees c
+    stays a sufficient statistic of e at negligible cost."""
 
     def __init__(self, context_dim: int = 8):
         super().__init__()
-        self.net = mlp([E_DIM, 64, 64, context_dim], out_act=nn.Tanh)
+        self.net = nn.Sequential(mlp([E_DIM, 64, 64, context_dim]),
+                                 ContextNorm(context_dim))
+        self.dec = mlp([context_dim, 64, E_DIM])
 
     def forward(self, e: torch.Tensor) -> torch.Tensor:
         return self.net(e)
+
+    def aux_loss(self, e: torch.Tensor) -> torch.Tensor:
+        c = self.net(e)
+        return nn.functional.mse_loss(self.dec(c), e)
 
 
 class AdaptationModule(nn.Module):
@@ -58,10 +88,12 @@ class AdaptationModule(nn.Module):
                 cin = ch
             self.tcn = nn.Sequential(*layers)
             self.head = nn.Sequential(nn.LayerNorm(ch),
-                                      nn.Linear(ch, context_dim), nn.Tanh())
+                                      nn.Linear(ch, context_dim),
+                                      ContextNorm(context_dim))
         else:  # feed-forward on the newest tick only
             self.tcn = None
-            self.head = mlp([f, 64, 64, context_dim], out_act=nn.Tanh)
+            self.head = nn.Sequential(mlp([f, 64, 64, context_dim]),
+                                      ContextNorm(context_dim))
 
     def forward(self, proprio: torch.Tensor,
                 dmu: torch.Tensor) -> torch.Tensor:

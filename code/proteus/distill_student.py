@@ -53,7 +53,7 @@ def distill(method: str, seed: int, cfg: Config = DEFAULT,
                                use_latent_flow=spec.use_latent_flow,
                                temporal=spec.temporal,
                                window=window).to(device)
-    opt = torch.optim.AdamW(student.parameters(), dcfg.lr)
+    opt = torch.optim.AdamW(student.parameters(), dcfg.lr, weight_decay=0.0)
     buffer = WindowBuffer(dcfg.buffer_size, window, 4, feat.feat_dim,
                           cfg.rl.context_dim)
     tracker = HistoryTracker(window, 4, feat.feat_dim)
