@@ -1,5 +1,22 @@
 # PROTEUS — Design Document
 
+> **Outcome note (post-campaign).** This document specifies the system as designed and built. The
+> full campaign then produced an honest *negative/boundary* result rather than the hypothesized win,
+> and the paper was reframed accordingly (title: *"PROTEUS: When Does Identifying the Body Help?
+> Embodiment-Context Adaptation and Its Limits for Actuation-Fault-Robust Visual Navigation"*).
+> **Finding:** the benefit of embodiment identification is gated by two conditions and a
+> quasi-static depth-guided differential-drive robot meets neither across most of the taxonomy.
+> (1) *Feedback compensability* — under reliable localization a fault-naive policy matches/beats the
+> fault-aware ladder (macro AUC$_S$ NOM 0.735 vs DR 0.680 vs PROTEUS 0.610), and clamping the
+> inferred context to nominal changes success by <2 pts (the pathway is inert). (2) *Exteroceptive
+> observability* — the one regime that would benefit (odometry-corrupting faults under dead-reckoned
+> localization; oracle 0.70–0.90 vs dead-reckon 0.08–0.23 at high severity) needs an independent
+> motion reference a forward depth sensor cannot supply (rotation decodable only weakly, $R^2$≈0.60;
+> translation not at all). The contribution is the **compensability–observability boundary** plus the
+> FaultNav benchmark and the context-collapse engineering lessons. Everything below documents the
+> as-built system; see `scripts/boundary_experiment.py`, `scripts/recoverability_experiment.py`, and
+> the manuscript for the boundary experiments that located the result.
+
 **Full title:** PROTEUS: Privileged Embodiment-Context Distillation for Fault-Adaptive Deep
 Reinforcement Learning in Visual Autonomous Navigation under Actuation Degradation
 

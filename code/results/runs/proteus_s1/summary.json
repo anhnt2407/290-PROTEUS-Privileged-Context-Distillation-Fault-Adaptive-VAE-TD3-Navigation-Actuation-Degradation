@@ -1,0 +1,1 @@
+{"run": "proteus_s1", "method": "proteus", "seed": 1, "episodes": 104, "steps": 20000, "wall_time_s": 147.9, "final_loss": 0.1259762942790985, "rollout_sr": 0.6153846153846154}

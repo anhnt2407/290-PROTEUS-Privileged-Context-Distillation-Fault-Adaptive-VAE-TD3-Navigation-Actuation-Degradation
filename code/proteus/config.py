@@ -62,6 +62,16 @@ class SimConfig:
     goal_radius: float = 0.30
     spawn_clearance: float = 0.16    # extra clearance beyond robot radius at spawn
     horizon: int = 300               # ticks (30 s)
+    # Localization source for the goal-bearing observation.
+    #   "oracle"       : goal bearing from the TRUE pose (external localization
+    #                    is available; reliable). Default for the main study --
+    #                    it is the regime under which actuation faults prove
+    #                    feedback-compensable.
+    #   "dead_reckon"  : goal bearing from a pose integrated from the (faulty)
+    #                    wheel odometry, as on a cheap robot with no external
+    #                    localization. Odometry-corrupting faults then drift the
+    #                    estimate -- the observability-boundary regime.
+    localization: str = "oracle"
 
 
 # --------------------------------------------------------------------------- #

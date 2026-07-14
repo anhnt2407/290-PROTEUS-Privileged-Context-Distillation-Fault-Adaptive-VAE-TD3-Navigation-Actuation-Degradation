@@ -151,6 +151,10 @@ class FaultNavEnv:
             self.cfg.fault, self._wheel_max, self.spec, rng, self._bias_factor)
         self.pos = self.layout.start.copy()
         self.heading = self.layout.start_heading
+        # dead-reckoned pose estimate: the robot's belief when it must localize
+        # from wheel odometry alone (starts at the known spawn pose).
+        self._pos_dr = self.layout.start.copy()
+        self._head_dr = self.layout.start_heading
         self.tick = 0
         self.outcome = RUNNING
         self._prev_goal_dist = self._goal_dist()
@@ -231,6 +235,11 @@ class FaultNavEnv:
         v_meas, w_meas = self._wheels_to_twist(wheels_meas)
         self._odom = np.array([v_meas, w_meas])
         self._realized = np.array([v_real, w_real])
+        # integrate the dead-reckoned belief from the measured odometry; under
+        # odometry-corrupting faults this drifts away from the true pose.
+        self._head_dr += w_meas * s.dt
+        self._pos_dr = self._pos_dr + v_meas * s.dt * np.array(
+            [math.cos(self._head_dr), math.sin(self._head_dr)])
 
         # outcome
         goal_dist = self._goal_dist()
@@ -297,13 +306,22 @@ class FaultNavEnv:
         q = 2 ** s.quantize_bits - 1
         x = np.round(np.clip(x, 0.0, 1.0) * q) / q
 
-        goal_dist = self._goal_dist()
+        # goal bearing from the localization source (true pose, or the
+        # dead-reckoned belief that drifts when odometry is faulted)
+        if self.cfg.sim.localization == "dead_reckon":
+            bpos, bhead = self._pos_dr, self._head_dr
+        else:
+            bpos, bhead = self.pos, self.heading
+        gvec = lay.goal - bpos
+        bel_dist = float(np.linalg.norm(gvec))
+        bel_ang = math.atan2(gvec[1], gvec[0]) - bhead
+        bel_ang = (bel_ang + math.pi) % (2 * math.pi) - math.pi
         max_d = 2 * s.arena_half * math.sqrt(2.0)
         obs = {
             "profile": x.astype(np.float32),
             "clean_profile": np.clip(clean, 0.0, 1.0).astype(np.float32),
-            "goal": np.array([goal_dist / max_d,
-                              self._goal_angle() / math.pi], dtype=np.float32),
+            "goal": np.array([bel_dist / max_d,
+                              bel_ang / math.pi], dtype=np.float32),
             "odom": np.array([self._odom[0] / s.v_max,
                               self._odom[1] / s.w_max], dtype=np.float32),
             "last_action": self._last_cmd.astype(np.float32),

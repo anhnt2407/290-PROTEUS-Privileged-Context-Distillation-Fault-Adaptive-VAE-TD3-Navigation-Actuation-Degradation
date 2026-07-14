@@ -250,11 +250,102 @@ def fig_trajectories():
     plots._save(fig, "fig_trajectories")
 
 
+def fig_boundary():
+    """The observability boundary: dead-reckoned localization leaves a
+    compensable fault (bias) easy but makes a proprioception-corrupting fault
+    (encoder) collapse reactive navigation, opening head-room only an oracle
+    captures."""
+    import json
+    code_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    path = os.path.join(code_dir, "results", "boundary", "boundary.json")
+    if not os.path.exists(path):
+        print("[fig_boundary] no boundary.json")
+        return
+    d = json.load(open(path))
+    sev = d["severities"]
+    titles = {"encoder": "encoder scale (proprioception-corrupting)",
+              "bias": "trim bias (proprioception-preserving)"}
+    fig, axes = plt.subplots(1, len(d["faults"]), figsize=(7.0, 3.0),
+                             sharey=True)
+    for ax, fault in zip(axes, d["faults"]):
+        sc = d["scripted"][fault]
+        ax.plot(sev, sc["oracle"], color="k", lw=2.0, marker="o", ms=4,
+                label="oracle bearing (upper bound)")
+        ax.plot(sev, sc["reactive"], color="k", lw=1.4, ls="--", marker="s",
+                ms=4, label="dead-reckoned bearing")
+        cols = {"nom": "#1f77b4", "dr": "#2ca02c", "proteus": "#d62728"}
+        for m in ("nom", "proteus"):
+            if m in d["policies"]:
+                ax.plot(sev, d["policies"][m]["dead_reckon"][fault],
+                        color=cols[m], lw=1.3, marker="^", ms=4, alpha=0.9,
+                        label=f"{plots.STYLE[m]['label']} (dead-reckon)")
+        ax.set_title(titles.get(fault, fault), fontsize=8)
+        ax.set_xlabel("severity $s$")
+        ax.grid(alpha=0.3)
+    axes[0].set_ylabel("success rate")
+    axes[0].legend(fontsize=5.6, frameon=False, loc="lower left")
+    axes[0].set_ylim(-0.03, 1.0)
+    fig.tight_layout()
+    plots._save(fig, "fig_boundary")
+
+
+def fig_recoverability():
+    """Is ego-motion recoverable from vision? Cross-validated R^2 of decoding
+    true rotation/translation from the VAE latent flow vs the raw depth
+    stream, and the heading drift from integrating the best rotation estimate."""
+    import json
+    path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(
+        __file__))), "results", "recoverability", "recoverability.json")
+    if not os.path.exists(path):
+        print("[fig_recoverability] no recoverability.json")
+        return
+    d = json.load(open(path))
+    # average the MLP R^2 over regimes (clip negatives to 0 for display, note in text)
+    reps = ["vae_flow", "raw_flow"]
+    labels = {"vae_flow": "VAE latent flow $\\Delta\\mu$",
+              "raw_flow": "raw depth $[x_{t-1},x_t,\\Delta x]$"}
+    def avg(rep, key):
+        vals = [d["table"][tag][rep][key] for tag in d["table"]
+                if d["table"][tag][rep][key] is not None]
+        return float(np.mean(vals)) if vals else float("nan")
+    fig, axes = plt.subplots(1, 2, figsize=(7.0, 2.9))
+    ax = axes[0]
+    x = np.arange(len(reps))
+    wr = [max(0.0, avg(r, "w_mlp")) for r in reps]
+    vr = [max(0.0, avg(r, "v_mlp")) for r in reps]
+    ax.bar(x - 0.19, wr, 0.36, label="rotation $\\omega$", color="#1f4e79")
+    ax.bar(x + 0.19, vr, 0.36, label="translation $v$", color="#c0504d")
+    ax.set_xticks(x)
+    ax.set_xticklabels([labels[r] for r in reps], fontsize=6.4)
+    ax.set_ylabel("decoding $R^2$ (5-fold CV)")
+    ax.set_ylim(0, 1.0)
+    ax.axhline(0, color="0.4", lw=0.6)
+    ax.legend(fontsize=6.5, frameon=False)
+    ax.set_title("ego-motion recoverability", fontsize=8)
+    # drift accounting: the integrated best rotation estimate already exceeds
+    # the bearing tolerance and the wrong-way threshold, before any bias help.
+    ax = axes[1]
+    dr = d["drift"]
+    bars = ["integrated vision\nrotation estimate", "goal-bearing\ntolerance",
+            "wrong-way\nthreshold"]
+    vals = [dr["integrated_heading_rms_rad"], 0.20, math.pi / 4]
+    ax.bar(range(3), vals, color=["#1f4e79", "0.6", "0.35"])
+    ax.set_xticks(range(3))
+    ax.set_xticklabels(bars, fontsize=6.0)
+    ax.set_ylabel("heading error [rad]")
+    ax.set_title("integrating it drifts too fast", fontsize=8)
+    ax.grid(alpha=0.3, axis="y")
+    fig.tight_layout()
+    plots._save(fig, "fig_recoverability")
+
+
 # --------------------------------------------------------------------------- #
 def main():
     fig_testbed()
     fig_reconstruction()
     fig_architecture()
+    fig_boundary()
+    fig_recoverability()
 
     ms = [(m, s) for m in HEADLINE_METHODS for s in HEADLINE_SEEDS]
     df = agg.load_all_sweeps(ms)

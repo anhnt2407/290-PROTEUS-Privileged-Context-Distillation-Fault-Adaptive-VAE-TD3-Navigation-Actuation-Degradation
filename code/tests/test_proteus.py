@@ -157,6 +157,38 @@ def test_env_collision_under_severe_bias():
     assert info["outcome"] in (COLLISION, SUCCESS, 3)
 
 
+def test_dead_reckoning_drifts_under_encoder_fault():
+    """Observability boundary: with dead-reckoned localization an
+    odometry-corrupting fault (encoder) makes the observed goal bearing drift
+    away from the truth, while under oracle localization the bearing is exact
+    and a preserving fault leaves dead-reckoning faithful."""
+    import dataclasses
+    from proteus.config import DEFAULT
+    dr_cfg = dataclasses.replace(
+        DEFAULT, sim=dataclasses.replace(DEFAULT.sim, localization="dead_reckon"))
+
+    def bearing_error(cfg, spec):
+        env = FaultNavEnv(cfg, "train", seed=3)
+        env.reset(spec=spec, scenario_seed=321)
+        errs = []
+        for _ in range(60):
+            obs, _, done, _ = env.step(np.array([0.6, 0.5]))
+            true_ang = env._goal_angle()
+            errs.append(abs(float(obs["goal"][1]) * math.pi - true_ang))
+            if done:
+                break
+        return float(np.mean(errs))
+
+    enc = spec_from({"encoder": 1.0})
+    # oracle localization: observed bearing equals the true bearing exactly
+    assert bearing_error(DEFAULT, enc) < 1e-6
+    # dead-reckoning under an odometry-corrupting fault: belief drifts
+    assert bearing_error(dr_cfg, enc) > 0.1
+    # dead-reckoning under a preserving fault (bias): odometry stays faithful
+    assert bearing_error(dr_cfg, spec_from({"bias": 1.0})) < \
+        bearing_error(dr_cfg, enc)
+
+
 def test_curriculum_expands_and_shrinks():
     cfg = DEFAULT
     s = FaultSampler(cfg.fault, cfg.curriculum, mode="curriculum")

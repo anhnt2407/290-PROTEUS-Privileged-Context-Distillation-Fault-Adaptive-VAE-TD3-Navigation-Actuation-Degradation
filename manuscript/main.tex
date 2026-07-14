@@ -20,11 +20,23 @@
 \newcommand{\E}{\mathbb{E}}
 \newcommand{\R}{\mathbb{R}}
 
+% --- numbers filled from results/boundary and results/recoverability ---
+\newcommand{\boundaryreactive}{the three trained policies fall from about
+ninety percent at nominal to a $0.08$--$0.23$ band at full severity, no better
+than a blind walk}
+\newcommand{\boundaryoracle}{$0.70$--$0.90$ --- the encoder fault is nearly a
+non-event when the bearing is trustworthy}
+\newcommand{\recovnumbers}{A \emph{linear} read-out of either representation is
+useless (rotation $R^2 \approx 0.00$); a non-linear decoder recovers the true
+turn rate only weakly (raw depth $R^2 \approx 0.60$, the VAE latent flow
+$R^2 \approx 0.49$) and forward speed not at all ($R^2 < 0$ for both, a
+forward depth profile scarcely changing as the robot advances).}
+
 \begin{document}
 
-\title{PROTEUS: Privileged Embodiment-Context Distillation for
-Fault-Adaptive Deep Reinforcement Learning Navigation\\
-Under Actuation Degradation}
+\title{PROTEUS: When Does Identifying the Body Help?\\
+Embodiment-Context Adaptation and Its Limits for\\
+Actuation-Fault-Robust Visual Navigation}
 
 \author{Tuan~Anh~Nguyen,
         Uiseok~Lee,
@@ -44,27 +56,28 @@ al.}}: PROTEUS: Privileged Embodiment-Context Distillation}
 
 \begin{abstract}
 % ~200 words, no numerals
-Vision-based deep reinforcement learning has produced capable mapless
-navigation policies, and recent work has hardened them against degraded
-illumination, corrupted perception, and moving obstacles. All of these
-efforts share a silent premise: the commanded motion is executed faithfully.
-Deployed robots violate this premise routinely --- motor wear, trim
-miscalibration, control-loop latency, traction slip, and battery-induced
-speed droop reshape the mapping from command to motion, so a policy tuned to
-one body quietly veers, oscillates, and collides while its perception remains
-flawless. This article presents PROTEUS, a framework that treats the
-embodiment itself as a latent context to be identified online and acted upon.
-A privileged teacher policy is trained with the true fault parameters under a
-self-paced severity curriculum that expands the fault distribution as
-competence grows. A deployable student then distills this privileged context
-from onboard evidence alone: the recent command--response history, fused with
-frame-to-frame motion of a frozen attention-enhanced variational latent that
-survives when odometry itself lies. Analytical results connect
-identification error to the value the policy forfeits. Across persistent,
-compound, sudden-onset, and held-out fault regimes in a purpose-built
-simulator, PROTEUS approaches the privileged upper bound and compensates
-where fault-blind randomization merely endures, while adding negligible
-decision-time cost.
+Vision-based deep reinforcement learning yields capable mapless navigation
+policies, and a growing literature hardens them against degraded perception
+and moving obstacles. A complementary vulnerability is the robot's own
+actuation: motor wear, trim drift, control latency, traction slip, and speed
+droop reshape how commands become motion, so a policy tuned to one body may
+veer or stall while its perception stays flawless. Borrowing the
+privileged-distillation philosophy that transformed legged locomotion, we
+develop PROTEUS, a complete framework that treats the embodiment as a latent
+context identified online: a privileged teacher trained on the true fault
+parameters under a self-paced severity curriculum, distilled into a deployable
+student that infers the context from command--response history fused with
+visual latent flow. We release FaultNav, a reproducible simulator whose
+wheel-space fault operator injects faults where physical faults act. Building
+the system in full, however, let us ask a sharper question than whether it
+works: when should it help at all? Through controlled experiments we establish
+a boundary. Under reliable localization the studied actuation faults prove
+largely feedback-compensable, so identification earns little; the single
+regime where embodiment knowledge would pay --- corrupted proprioception ---
+demands an exteroceptive motion reference that a forward depth sensor cannot
+supply. We characterize this compensability-and-observability boundary
+analytically and empirically, delineating where embodiment adaptation is worth
+its cost and where reactive feedback already suffices.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -113,8 +126,8 @@ compose naturally with high-dimensional learned perception.
 
 This article asks the question complementary to its predecessors:
 \emph{can a visual navigation policy identify what its body has become, from
-nothing but its own recent experience, and steer accordingly?} We answer
-affirmatively with PROTEUS, named for the shape-shifting sea god: a
+nothing but its own recent experience, and steer accordingly?} We build the
+full machinery to do so --- PROTEUS, named for the shape-shifting sea god: a
 three-phase framework that (i) inherits the frozen attention-enhanced VAE
 perception of the reference line, (ii) trains a \emph{privileged teacher}
 policy conditioned on the true fault parameters through a compact learned
@@ -122,48 +135,73 @@ embodiment context, with a self-paced curriculum that widens the fault
 severity distribution as competence grows, and (iii) distills a deployable
 \emph{student} that regresses the privileged context online from a causal
 window of commanded actions and measured odometry, cross-checked against
-frame-to-frame motion of the visual latent --- an exteroceptive echo of
-ego-motion that remains truthful when wheel encoders themselves fault. The
-approach follows the privileged-distillation philosophy that proved decisive
-for legged locomotion~\cite{Kumar2021RMA,Lee2020LearningQuadrupedal} and
-transfers it to fault-ridden wheeled navigation with learned visual
-perception, where the context must explain not terrain but the actuator
-chain itself.
+frame-to-frame motion of the visual latent. The design follows the
+privileged-distillation philosophy that proved decisive for legged
+locomotion~\cite{Kumar2021RMA,Lee2020LearningQuadrupedal}.
+
+Having built the system in full, we use it not to claim a victory but to
+answer a more discriminating question: \emph{when is this machinery
+warranted?} The transfer of privileged embodiment adaptation from legged to
+wheeled robots is usually assumed rather than tested, and our controlled
+experiments reveal that the assumption fails --- for an instructive reason.
+The benefit of identifying the body is gated by two conditions, and a
+quasi-static depth-guided wheeled robot satisfies neither across most of the
+fault taxonomy. First, \emph{feedback compensability}: when reliable
+localization is available, a purely reactive policy already counters wheel
+gain loss, trim bias, slip, and droop through closed-loop error correction,
+so a policy that never saw a fault matches or beats one trained across the
+fault distribution, and clamping away the inferred context changes almost
+nothing. Second, \emph{exteroceptive observability}: the one regime where
+embodiment knowledge \emph{would} pay --- corrupted proprioception, where the
+robot's own odometry lies and dead-reckoned localization drifts --- opens a
+large head-room that only an independent motion reference could capture, yet
+we show that reference is not recoverable from a forward depth stream: the
+reconstruction-trained latent discards ego-motion, and the raw stream encodes
+rotation too noisily to integrate and translation not at all. Legged
+locomotion sits on the opposite side of both gates, which is precisely why
+adaptation succeeds there. Mapping this
+\emph{compensability--observability boundary} --- rather than adding one more
+robustness result --- is the contribution.
 
 The contributions are fourfold:
 \begin{itemize}
-\item \textbf{Problem formalization and testbed.} We formalize navigation
-under actuation degradation as a context-augmented decision process with a
-physically explicit wheel-space fault operator covering six actuation axes
-(per-wheel gain loss, yaw-rate trim bias, integer-tick command latency,
-stochastic traction slip, saturation droop, deadzone) plus an odometry
-(encoder-scale) axis, and release FaultNav, a self-contained
-differential-drive simulator in which every axis acts where physical faults
-act: on commanded wheel rates.
-\item \textbf{Privileged embodiment-context learning with a self-paced
-severity curriculum.} A twin-critic deterministic policy-gradient learner
-(TD3) is conditioned on a bounded context embedding of the true fault vector,
-trained end-to-end through both value and policy losses, while a
-success-gated curriculum with hysteresis expands the sampled severity
-ceiling --- concentrating experience at the frontier of competence. We
-identify and cure a silent failure mode of this combination: under a
-competence-gated curriculum the encoder's task gradient vanishes exactly
-when the encoder must form, and weight decay prunes it to a constant; a
-lightweight identifiability regularizer restores it.
-\item \textbf{Proprioceptive--exteroceptive context distillation.} A causal
-dilated temporal convolution regresses the privileged context from the
-recent command--response window fused with a learned projection of
-latent-space visual flow, trained on-policy in the spirit of
-DAgger~\cite{Ross2011DAgger}. Two analytical results anchor the design: a
-finite-window identifiability bound for the gain axes under persistent
-excitation, and a value-gap bound linear in context estimation error.
-\item \textbf{A fault-centric evaluation protocol.} Beyond persistent
-severity sweeps, the protocol probes sudden mid-episode onsets (adaptation
-transients), compound faults, a held-out fault type never seen in training,
-corrupted odometry (where proprioception-only adaptation is provably
-fooled), unseen layouts, and a decision-time intervention that clamps the
-inferred context to its nominal value --- isolating exactly how much of the
-performance is \emph{caused} by online adaptation.
+\item \textbf{A complete embodiment-adaptation system and testbed.} We
+formalize navigation under actuation degradation as a context-augmented
+decision process with a physically explicit wheel-space fault operator
+covering six actuation axes (per-wheel gain loss, yaw-rate trim bias,
+integer-tick command latency, stochastic traction slip, saturation droop,
+deadzone) plus an odometry (encoder-scale) axis, and release FaultNav, a
+self-contained differential-drive simulator in which every axis acts where
+physical faults act: on commanded wheel rates. On top of it we build PROTEUS
+end to end --- privileged teacher, self-paced curriculum, and distilled
+student --- including a cure for a silent \emph{context-collapse} failure
+mode of curriculum-trained privileged encoders that we believe is of
+independent interest to anyone building such systems.
+\item \textbf{The feedback-compensability finding.} Under reliable
+localization, the studied actuation faults are largely absorbed by
+closed-loop feedback: a fault-naive nominal policy is the strongest method
+across persistent, compound, unseen-layout, and sudden-onset regimes, domain
+randomization does not improve on it, and a decision-time intervention that
+clamps the embodiment context to its nominal value leaves performance
+essentially unchanged --- direct evidence that the adaptation pathway is
+inert in this regime. An oracle-controller analysis confirms the cause is
+task structure, not undertraining: even perfect embodiment knowledge cannot
+beat reactive feedback where feedback already compensates.
+\item \textbf{The observability boundary.} A controlled localization
+experiment exposes the phase transition. Replacing oracle localization with
+dead-reckoning from the faulty odometry leaves compensable faults easy but
+makes proprioception-corrupting faults collapse reactive navigation, opening
+a wide gap to an oracle that knows the true bearing --- the head-room a
+successful identifier would need. We then show, through a perception
+motion-recoverability analysis, that this head-room is not exteroceptively
+recoverable on a forward depth sensor, closing the loop on \emph{why}
+identification cannot help even where it is needed.
+\item \textbf{Analytical characterization.} Two results frame the boundary:
+a finite-window identifiability bound for the gain axes under persistent
+excitation (what \emph{is} learnable from proprioception), and a value-gap
+bound linear in context error (what identification \emph{buys}). Together
+with the compensability and observability findings they predict, and the
+experiments confirm, that the purchased value is near zero on this platform.
 \end{itemize}
 
 Everything inherited from the reference framework --- the attention-VAE
@@ -205,11 +243,16 @@ most prominently Rapid Motor Adaptation~\cite{Kumar2021RMA} and
 learned-terrain locomotion~\cite{Lee2020LearningQuadrupedal}. PROTEUS
 belongs to this family but differs in three respects: the context explains
 \emph{faults in the actuator chain} rather than terrain or payload; the
-identification evidence fuses proprioception with \emph{latent visual flow}
-from a frozen perception VAE, giving a redundant channel that survives
-encoder faults; and training couples the context pathway with a
-\emph{self-paced severity curriculum}~\cite{Klink2022SPDL,Portelas2020ALPGMM}
-rather than a fixed randomization range.
+identification evidence is designed to fuse proprioception with \emph{latent
+visual flow} from a frozen perception VAE, intended as a redundant channel for
+when the encoders themselves fault --- a design whose actual informativeness
+we put to the test rather than assume; and training couples the context
+pathway with a \emph{self-paced severity
+curriculum}~\cite{Klink2022SPDL,Portelas2020ALPGMM} rather than a fixed
+randomization range. Our findings speak directly to the scope of this
+literature: they identify the conditions --- feedback-insufficiency and
+exteroceptive observability --- under which its central mechanism transfers,
+and show a common robot class that meets neither.
 
 \subsection{Fault-Tolerant Control and Diagnosis}
 Model-based fault detection, isolation, and reconfiguration is a mature
@@ -545,15 +588,21 @@ $\sigma_o^2 / \sum_k (w^{c}_{k,i})^2 \le \sigma_o^2 / (W\underline{w}^2)$
 by Assumption~\ref{as:pe}; the standard tail bound gives the claim.
 \end{IEEEproof}
 
-\begin{remark}
+\begin{remark}\label{rem:id}
 The same argument applied to the differential channel identifies the signed
 bias axis, and command latency is recovered as the argmax of the
 command--response cross-correlation, exact once $W$ exceeds the true delay.
 A TCN with receptive field beyond $W$ can realize all three estimators
-simultaneously, which motivates the architecture of $A_\theta$ and predicts
-the window-length ablation (A3): under encoder faults ($e_o$), odometry is
-biased and Proposition~\ref{prop:id} degrades gracefully only if an
-independent measurement channel exists --- the role of latent visual flow.
+simultaneously, which motivates the architecture of $A_\theta$. The bound
+also exposes the fault line of the whole approach: under encoder faults
+($e_o$) the odometry $\tilde{w}$ is itself biased, so
+Proposition~\ref{prop:id} loses its unbiased regressor and identification can
+only survive through an \emph{independent} measurement channel. This is the
+intended role of latent visual flow --- and, as
+Section~\ref{sec:results} shows empirically, the binding constraint: on a
+forward depth sensor that channel does not carry enough ego-motion to restore
+the estimate, which is exactly why proprioception-corrupting faults mark the
+boundary of the method's usefulness.
 \end{remark}
 
 \begin{proposition}[Value gap under context error]\label{prop:gap}
@@ -577,10 +626,16 @@ distribution; each term is bounded by $L_Q \lVert \pi(s_t, c_t) - \pi(s_t,
 \epsilon$, and the geometric sum yields the bound.
 \end{IEEEproof}
 
-Together, Propositions~\ref{prop:id} and~\ref{prop:gap} predict the shape of
-the empirical results: context error decays with window length and
-excitation, and success tracks the privileged upper bound at a distance
-proportional to that error.
+Read together, the two propositions bound what identification can deliver ---
+never more than the privileged teacher itself achieves, and less in
+proportion to context error. They are therefore silent on the quantity that
+turns out to matter most: \emph{how high the privileged ceiling sits above a
+fault-naive baseline in the first place}. Proposition~\ref{prop:gap} caps the
+student's shortfall below the teacher, but if the teacher earns nothing over a
+reactive policy --- the empirical situation we document under reliable
+localization --- then a tight bound merely certifies that the student inherits
+a benefit of zero. This gap between what is \emph{identifiable} and what is
+\emph{worth identifying} is the pivot of the results that follow.
 
 \section{The FaultNav Testbed}\label{sec:testbed}
 FaultNav is a self-contained NumPy simulator built for this study
@@ -720,10 +775,203 @@ collision within five seconds, recovery time, and context error
 $\lVert\ehat - c\rVert$. Paired Wilcoxon tests over matched cells compare
 PROTEUS against DR.
 
+\subsection{Two Boundary Experiments}\label{sec:boundary-design}
+Two further experiments, central to this article, probe \emph{why} the
+compensability result holds and \emph{when} it would break.
+
+\subsubsection{Localization ablation (the observability gate)}
+Every method above navigates with an oracle goal bearing computed from the
+true pose --- the setting under which we claim faults are compensable. We
+re-evaluate the trained policies with the localization source switched to
+\emph{dead-reckoning}: the goal bearing is derived from a pose integrated out
+of the (faulty) measured odometry, as on a robot without external
+localization. On a proprioception-corrupting axis (encoder scale) this belief
+drifts; on a preserving axis (bias) it does not. To bound what \emph{perfect}
+adaptation could recover independently of any learned policy, a scripted
+proportional controller runs the same seed-matched scenarios twice: once on
+the drifting dead-reckoned bearing and once on the true bearing (the oracle a
+flawless identifier would emulate). The gap between them is the head-room.
+
+\subsubsection{Perception motion-recoverability (the observability limit)}
+Capturing that head-room requires estimating the robot's true ego-motion from
+a channel independent of the faulted encoders --- vision. We quantify how much
+is there: from paired consecutive depth frames we decode true angular and
+linear velocity by cross-validated ridge and multilayer-perceptron regression,
+comparing two representations --- the frame-to-frame difference of the frozen
+VAE posterior mean (the signal the student consumes) and the raw depth frames
+themselves --- and convert the best rotation fit into the heading error a
+policy would accumulate by integrating it over an episode.
+
 % ===================== RESULTS =====================
 \section{Results and Discussion}\label{sec:results}
-\textcolor{red}{[RESULTS-PLACEHOLDER: filled from numbers.json after the
-campaign]}
+We report three seeds per headline method, forty episodes per severity cell,
+on byte-identical seed-matched scenarios. The narrative is not the one the
+system was built to tell, and we present it as we found it: under the
+conditions a faithful differential-drive depth platform actually presents,
+embodiment identification does not improve navigation, and the reasons are
+structural rather than incidental.
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=0.98\textwidth]{fig_stress}
+\caption{Success versus severity for each trained fault axis (mean $\pm$ seed
+std, three seeds). Every method degrades gracefully and the fault-naive
+nominal policy (grey) is the most robust on all axes except command latency;
+the privileged teacher and distilled PROTEUS student trail throughout. Under
+reliable localization the faults are feedback-compensable, so fault exposure
+and embodiment context earn nothing.}
+\label{fig:stress}
+\end{figure*}
+
+\input{tab_main}
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=0.99\columnwidth]{fig_intervention}
+\caption{Decision-time intervention. Clamping the inferred embodiment context
+to its nominal embedding (dashed) tracks the unclamped policy (solid) across
+severity, changing macro success by under two points --- the adaptation
+pathway can be switched off at deployment with no loss.}
+\label{fig:intervention}
+\end{figure}
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=0.99\columnwidth]{fig_boundary}
+\caption{The observability boundary. With dead-reckoned localization, a
+proprioception-preserving fault (bias, right) leaves navigation intact, while a
+proprioception-corrupting fault (encoder, left) collapses the dead-reckoned
+policies yet not the oracle controller --- opening head-room that only an
+independent bearing estimate could capture.}
+\label{fig:boundary}
+\end{figure}
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=0.99\columnwidth]{fig_recoverability}
+\caption{Why the head-room is unreachable. Left: cross-validated $R^2$ of
+decoding true rotation and translation from the VAE latent flow versus the raw
+depth stream --- only rotation from raw depth is even weakly recoverable, and
+translation not at all. Right: the residual noise in the best rotation
+estimate, integrated over an episode, produces a heading error on the order of
+the encoder-bias drift it must cancel.}
+\label{fig:recoverability}
+\end{figure}
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=0.99\columnwidth]{fig_trajectories}
+\caption{Representative trajectories under a mid-episode left-gain onset
+(marked $\times$). With an accurate goal bearing the closed loop corrects the
+induced veer whether or not the fault is named; DR and PROTEUS behave alike.}
+\label{fig:trajectories}
+\end{figure}
+
+\subsection{Under Reliable Localization, the Faults Are Feedback-Compensable}
+Fig.~\ref{fig:stress} sweeps each trained axis over severity. Every method
+degrades gracefully, and the ordering is the opposite of the framework's
+hypothesis: the \emph{fault-naive} nominal policy is the most robust, with a
+macro success-severity area of $0.735 \pm 0.030$, ahead of curriculum domain
+randomization ($0.680 \pm 0.026$) and raw-input randomization
+($0.680 \pm 0.049$). A paired Wilcoxon signed-rank test over the forty-two
+matched (axis, severity) cells confirms the nominal policy dominates
+randomization (mean per-cell margin $+0.053$, $p < 10^{-3}$). Crucially, this
+is not a base-competence artifact: on clean episodes the two are
+indistinguishable (nominal $0.843$, randomization $0.849$). Training across the
+fault distribution therefore buys nothing here and costs a little --- the
+familiar price of averaging over bodies a fault-blind policy cannot tell
+apart. Per axis (Table~\ref{tab:main}), the nominal policy leads on bias,
+droop, slip, and both gain channels; the lone exception is command latency,
+where randomization edges ahead ($0.700$ vs.\ $0.648$), the first hint that a
+genuinely feedback-breaking axis exists but is a minority of the taxonomy.
+The mechanism is visible in the trajectories (Fig.~\ref{fig:trajectories}):
+with an accurate goal bearing available every tick, the closed loop simply
+observes the tracking error a fault induces and corrects it, whether or not it
+can name the fault.
+
+\subsection{The Embodiment-Context Pathway Is Inert}\label{sec:inert}
+The privileged teacher --- which reads the \emph{true} fault vector --- and its
+distilled student are the two \emph{weakest} methods (macro area $0.586$ and
+$0.610$), trailing the nominal policy even on clean episodes ($0.754$ and
+$0.789$ vs.\ $0.843$); the nominal-versus-PROTEUS margin is
+$+0.121$ ($p < 10^{-6}$). A direct causal test settles whether the context
+contributes anything: clamping the inferred context to its nominal embedding at
+every decision changes success by about two points at most, and in the wrong
+direction for the method's premise --- at high severity the deployable
+student's success shifts by $-0.02$, so clamping is if anything a marginal
+\emph{improvement}, and the teacher is equally unmoved
+(Fig.~\ref{fig:intervention}). Adaptation can be switched off at deployment
+with no loss, which is the definition of an inert pathway. It is inert in the way the design predicts when there is no value to
+capture: the student does regress the teacher target mechanically, yet the
+context is not even identifiable as intended --- a ridge probe recovers the
+per-wheel gains from the learned context at $R^2 = -0.46$, worse than
+predicting their mean. With feedback already compensating, end-to-end training
+has no gradient pressure to make the context informative, the extra input width
+and optimization burden depress base competence, and
+Proposition~\ref{prop:gap} reads in reverse: the privileged ceiling sits at the
+baseline, so a tight student--teacher gap merely guarantees a benefit of zero.
+
+\subsection{Where Identification \emph{Would} Help: the Observability Boundary}
+\label{sec:obs}
+That the faults are compensable is a statement about the \emph{information the
+policy is handed}, not the faults themselves. Every result above grants an
+oracle goal bearing from the true pose. Real cheap robots localize by
+dead-reckoning their wheel odometry, and Fig.~\ref{fig:boundary} re-runs the
+trained policies and a scripted controller with that substitution.
+The phase transition is sharp. On a proprioception-\emph{preserving} axis
+(trim bias) the dead-reckoned belief stays faithful and success is essentially
+unchanged from the oracle case. On a proprioception-\emph{corrupting} axis
+(encoder scale) the belief drifts, and reactive navigation collapses:
+\boundaryreactive. The scripted controller given the \emph{true} bearing holds
+\boundaryoracle\ on the same scenarios --- the head-room a successful embodiment
+identifier could unlock. This is the regime the whole apparatus was built for,
+and it is real; the question is whether the deployable system can enter it.
+
+\subsection{Why It Cannot: Ego-Motion Is Not Exteroceptively Recoverable}
+\label{sec:recover}
+Capturing that head-room requires reconstructing the true bearing from a
+channel the faulty encoders do not touch --- vision. Fig.~\ref{fig:recoverability}
+measures how much ego-motion the visual stream actually carries.
+\recovnumbers\ The consequence is decisive: the residual noise in even the best
+rotation estimate, integrated over a typical episode, random-walks the heading
+by roughly a radian --- larger than a right angle's half, far past the
+goal-bearing tolerance, and on the order of the odometric drift it is meant to
+cancel. A forward depth sensor simply does not carry a usable, drift-free
+ego-motion reference, so the redundant channel the student was to lean on when
+the encoders lie does not exist. Identification is not merely hard here; on the one axis where it
+would pay, it is information-theoretically blocked. This closes the loop: the
+compensable axes need no identification, and the one axis that needs it cannot
+be served.
+
+\subsection{Ablations, Cost, and the Boundary Restated}
+\input{tab_ablation}
+\input{tab_compute}
+The ablations (Table~\ref{tab:ablation}) separate two questions that the
+headline result conflates: can the machinery be \emph{trained}, and does the
+training \emph{help}. On the first, the answer is a qualified yes and locates
+two prerequisites: without the self-paced curriculum (A1) or the twin-critic
+backbone (A5) the privileged teacher fails to form at all, collapsing far below
+every other method --- the curriculum and TD3 are necessary just to obtain a
+competent privileged policy. On the second, the distillation variants behave
+exactly as a working mechanism should and yet move the navigation needle not at
+all: removing on-policy collection, shrinking the window, dropping the
+latent-flow branch, or replacing the temporal model each degrades the
+context-regression error in the expected direction (from $0.63$ up to past
+$1.5$), while success stays clustered near the full model and well beneath the
+fault-naive baseline. The parts work; there is simply no benefit for them to
+preserve. The full pathway
+costs under a millisecond per decision (Table~\ref{tab:compute}), so the
+verdict is about value, not overhead. Read together, the experiments draw a
+two-gate boundary. Embodiment identification helps a learned navigator only
+when feedback is \emph{insufficient} (so knowing the body changes the best
+action) \emph{and} the needed state is \emph{exteroceptively observable} (so a
+deployable estimator can recover it). A quasi-static, depth-guided
+differential-drive robot fails the first gate across most of the taxonomy and
+the second gate on the axis where the first would hold --- which is precisely
+why the same machinery is transformative for dynamically unstable, richly
+sensed legged robots and idle here. The contribution is not a faster policy but
+this map, and the two properties it names are measurable on any new platform
+before a single policy is trained.
 
 \section{Threats to Validity}\label{sec:threats}
 \textbf{Simulation fidelity.} FaultNav abstracts a physical platform to a
@@ -741,34 +989,43 @@ sees only signals available on a real platform (commands, encoder odometry,
 visual latents); the privileged vector exists only inside the trainer.
 \textbf{Statistical power.} Three seeds per headline method with forty
 episodes per cell bound seed variance visibly in all figures; ablations use
-one seed and are interpreted only through large effects.
+one seed and are interpreted only through large effects. \textbf{Scope of the
+boundary claim.} Our central conclusion is deliberately conditional, not
+universal: it states that a \emph{quasi-static, depth-guided, differential-drive}
+robot with reliable localization fails both benefit gates, not that embodiment
+adaptation is generally unhelpful. The compensability gate is tied to feedback
+authority --- a faster or dynamically unstable platform, a tighter control
+budget, or a harder timeout could reopen it --- and the observability gate is
+tied to the sensor: a wide field-of-view lidar, a textured camera, or an
+inertial unit could carry the ego-motion a forward depth profile lacks. The
+value of the analysis is precisely that it names the two properties to check
+before investing in an identification stack, and both are measurable on a new
+platform without training a policy.
 
 \section{Conclusion}\label{sec:conclusion}
 % 200-250 words, no numerals
-This article extended an established attention-VAE deep reinforcement
-learning navigation framework along the one robustness axis its
-predecessors left untouched: the integrity of the robot's own actuation.
-The proposed PROTEUS framework treats the embodiment as a latent context,
-learns a privileged teacher that navigates across a curriculum-expanded
-distribution of wheel-space faults, and distills a deployable student that
-identifies the context online from the command--response fingerprint of the
-recent past, reinforced by ego-motion evidence extracted from the frozen
-perceptual latent. The analysis ties the two halves together: gains are
-identifiable from finite windows at a quantifiable rate, and the value a
-student forfeits is linear in its identification error --- predictions the
-experiments corroborate in shape and in magnitude. Empirically, adaptation
-proved decisively different from robustness: fault-blind randomization
-endures degradation by uniform caution, while the context-conditioned
-policy counter-steers biased platforms, re-times delayed ones, and slows
-only when the identified body warrants it, approaching the privileged upper
-bound across persistent, compound, and sudden-onset regimes and degrading
-gracefully on faults never seen in training. The exteroceptive flow channel
-proved essential precisely when proprioception itself was corrupted,
-vindicating redundant identification. Future work will transfer the
-framework to physical platforms, couple it with the perception-integrity
-and dynamic-obstacle members of the family, extend the taxonomy to
-time-varying and adversarial faults, and explore context-conditioned
-recovery maneuvers beyond steady-state compensation.
+This article extended an established attention-VAE navigation framework along
+the one robustness axis its predecessors left untouched: the integrity of the
+robot's own actuation. We built PROTEUS in full --- a privileged teacher
+conditioned on the true fault parameters through a self-paced severity
+curriculum, distilled into a deployable student that reads the embodiment from
+the command--response fingerprint of the recent past reinforced by visual
+latent flow --- atop FaultNav, whose faults act where physical faults do.
+Rather than present the system as a victory, we used it as an instrument to ask
+when identifying the body is worth its cost, and the answer is a boundary with
+two gates. Where localization is reliable, closed-loop feedback already absorbs
+the studied faults, so a fault-naive policy matches fault-aware ones and the
+adaptation pathway contributes almost nothing --- an oracle analysis confirms
+this is task structure, not imperfect training. The lone regime where
+embodiment knowledge would help, when proprioception itself is corrupted and
+the dead-reckoned pose drifts, demands an independent motion reference a forward
+depth sensor cannot supply. Legged locomotion, where such adaptation is
+decisive, lies on the far side of both gates. The lesson is not that embodiment
+adaptation is futile but that its value is conditional and predictable in
+advance: the gates can be checked on a new platform before a policy is trained.
+Future work will target robots that fail the compensability gate and richer
+sensing that passes the observability gate, where the same machinery should
+finally earn its keep.
 
 \section*{Acknowledgment}
 The authors thank the maintainers of the reference VAE+DDPG navigation

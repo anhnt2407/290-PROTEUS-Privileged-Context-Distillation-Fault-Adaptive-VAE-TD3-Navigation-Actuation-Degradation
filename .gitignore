@@ -5,6 +5,7 @@ code/results/corpus/
 code/results/runs/*/agent.pt
 code/results/runs/*/student.pt
 code/results/vae/vae.pt
+code/results/*.log
 *.npz
 manuscript/*.aux
 manuscript/*.log

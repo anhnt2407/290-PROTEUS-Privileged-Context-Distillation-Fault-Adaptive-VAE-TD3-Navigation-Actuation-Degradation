@@ -127,7 +127,8 @@ def run_pool(jobs, fn, workers: int, tag: str):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--stages", nargs="*",
-                    default=["vae", "train", "distill", "eval", "figures"])
+                    default=["vae", "train", "distill", "eval", "boundary",
+                             "figures"])
     ap.add_argument("--workers", type=int, default=12)
     args = ap.parse_args()
 
@@ -150,11 +151,19 @@ def main():
         run_pool(pending_distill(), _distill_one, args.workers, "distill")
     if "eval" in args.stages:
         run_pool(pending_eval(), _eval_one, args.workers, "eval")
-    if "figures" in args.stages:
+    here = os.path.dirname(__file__)
+    if "boundary" in args.stages:
         import subprocess
         subprocess.run([sys.executable,
-                        os.path.join(os.path.dirname(__file__),
-                                     "make_figures.py")], check=True)
+                        os.path.join(here, "boundary_experiment.py")],
+                       check=True)
+        subprocess.run([sys.executable,
+                        os.path.join(here, "recoverability_experiment.py")],
+                       check=True)
+    if "figures" in args.stages:
+        import subprocess
+        subprocess.run([sys.executable, os.path.join(here, "make_figures.py")],
+                       check=True)
 
 
 if __name__ == "__main__":

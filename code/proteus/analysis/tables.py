@@ -23,6 +23,9 @@ FT_TEX = {"gain_L": "Gain-L", "gain_R": "Gain-R", "bias": "Bias",
 
 
 def _pm(mean, std, scale=100.0, d=1):
+    import math
+    if std is None or (isinstance(std, float) and math.isnan(std)):
+        return f"{scale * mean:.{d}f}"          # single-seed: no spurious std
     return f"{scale * mean:.{d}f}$\\pm${scale * std:.{d}f}"
 
 
